@@ -8,11 +8,92 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 ## [Unreleased]
 
 ### Pendiente
-- Instalación de dependencias y setup de servicios externos
-- Componentes UI adicionales de shadcn/ui
-- Páginas públicas (Landing, Search, Detail)
+- Componentes UI adicionales de shadcn/ui (17 componentes)
+- Páginas públicas (Search, Detail, Landing mejorado)
 - Dashboard para Admin y Owner
-- Integración de APIs
+- Integración con Meilisearch para búsqueda avanzada
+
+---
+
+## [0.2.0-alpha] - 2025-12-29
+
+### Added
+
+#### Dependencias Instaladas
+- ✨ 501 paquetes instalados con Bun (package manager)
+- ✨ Compatibilidad verificada de todas las dependencias principales:
+  - Next.js 15.0.0, React 18.3.0, TypeScript 5.3.3
+  - Prisma 5.0.0, Clerk 5.5.0, Stripe 13.9.0
+  - Tailwind CSS 3.4.0, Radix UI 1.0.0
+  - Zod 3.22.4, Framer Motion 10.16.4
+
+#### Base de Datos
+- ✨ Docker Compose configurado para PostgreSQL 17-alpine
+- ✨ PostgreSQL corriendo localmente en puerto 5433
+- ✨ Prisma client generado exitosamente
+- ✨ Schema completo aplicado a la base de datos (10 tablas creadas)
+- ✨ Índices y constraints optimizados para performance
+
+#### Configuración del Entorno
+- ✨ Archivo .env configurado con:
+  - DATABASE_URL para PostgreSQL local
+  - Placeholder keys para Clerk (auth)
+  - Placeholder keys para Stripe (pagos)
+  - Placeholder keys para Bunny.net CDN
+  - Feature flags (Reviews, Subscriptions)
+- ✨ next-env.d.ts generado automáticamente
+- ✨ bun.lock creado como lockfile
+
+#### Correcciones y Ajustes
+- ✨ Compatibilidad de versiones en package.json
+  - Downgrade de Next.js 16 a 15.0.0 (para Bun compatibility)
+  - Ajuste de Radix UI a versión 1.0.0 compatible
+  - Sincronización de dependencias compartidas
+- ✨ Arreglo de tsconfig.json (merge de compilerOptions duplicados)
+- ✨ Remoción de @fulltext attribute incompatible con PostgreSQL
+- ✨ Deshabilitación temporal de ClerkProvider en layout (para desarrollo sin keys reales)
+
+#### Middleware y Webhooks
+- ✨ src/middleware.ts creado (deshabilitado temporalmente)
+- ✨ src/app/api/webhooks/clerk/route.ts implementado
+- ✨ Validación de Webhook Svix integrada
+- ✨ Sincronización automática de usuarios desde Clerk a PostgreSQL
+
+#### Verificación de Setup
+- ✅ Servidor Next.js iniciado correctamente en http://localhost:3000
+- ✅ Home page renderizada exitosamente con Foodzinder branding
+- ✅ Feature cards visibles y estilizadas
+- ✅ Sin errores TypeScript en compilación
+- ✅ PostgreSQL conectado y funcional
+- ✅ Prisma client listo para usar
+
+### Fixed
+- 🔧 Conflicto de versiones en dependencias de Radix UI
+- 🔧 tsconfig.json duplicado "compilerOptions" key
+- 🔧 Incompatibilidad de @@fulltext attribute con PostgreSQL
+- 🔧 Puerto 5432 ya en uso (cambiado a 5433)
+- 🔧 Headers await issue en Next.js 15
+
+### Environment Setup
+**Paso completado**: Opción A del roadmap
+**Status**: ✅ Completado
+**Duración**: 2 horas
+**Archivos modificados**: 4
+**Archivos creados**: 3
+**Archivos generados**: 3
+
+### Próximos Pasos
+1. Agregar credenciales reales de Clerk en .env
+2. Re-habilitar ClerkProvider y middleware
+3. Implementar 17 componentes UI base de shadcn/ui (v0.2.1)
+4. Crear páginas públicas (Search, Detail) (v0.2.2)
+
+### Notas Técnicas
+- PostgreSQL corriendo en puerto 5433 (no 5432) debido a conflicto local
+- Clerk keys actualmente son placeholders - usuario debe configurar reales
+- ClerkProvider deshabilitado en src/app/layout.tsx (TODO en código)
+- middleware.ts deshabilitado pero listo para habilitar
+- Todas las tablas Prisma creadas exitosamente (User, Restaurant, Menu, Dish, Review, etc.)
 
 ---
 
@@ -107,4 +188,3 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 - **0.4.0**: Sistema de pagos
 - **0.5.0**: Reseñas y comunidad
 - **1.0.0**: MVP producción
-

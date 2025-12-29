@@ -87,7 +87,6 @@ model Restaurant {
   @@index([ownerId])
   @@index([status])
   @@index([slug])
-  @@fulltext([name, description]) // MySQL-specific, adjust for PostgreSQL if needed
 }
 
 enum RestaurantStatus {

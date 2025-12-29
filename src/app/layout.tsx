@@ -37,12 +37,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <ClerkProvider>
+    // TODO: Enable ClerkProvider once Clerk keys are configured in .env
+    // <ClerkProvider>
+    <>
       <html lang="es">
         <body className={`${geist.variable} ${geistMono.variable} antialiased`}>
           {children}
         </body>
       </html>
-    </ClerkProvider>
+    </>
+    // </ClerkProvider>
   );
 }
