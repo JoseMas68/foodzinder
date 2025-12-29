@@ -1,0 +1,348 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// User Management (Extended Clerk)
+// ============================================================================
+
+model User {
+  id    String     @id @default(cuid())
+  email String     @unique
+  firstName String
+  lastName  String
+  role  UserRole   @default(USER)
+
+  // Billing Information
+  taxId       String?
+  billingName String?
+  billingAddress String?
+
+  // Relations
+  restaurants   Restaurant[]
+  menus         Menu[]
+  reviews       Review[]
+  subscriptions Subscription[]
+  invoices      Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([role])
+  @@index([email])
+}
+
+enum UserRole {
+  ADMIN
+  OWNER
+  USER
+}
+
+// ============================================================================
+// Restaurant Management
+// ============================================================================
+
+model Restaurant {
+  id    String   @id @default(uuid())
+
+  // Basic Info
+  name  String
+  slug  String   @unique
+  description String
+
+  // Location
+  address   String
+  latitude  Float?
+  longitude Float?
+
+  // Status
+  status RestaurantStatus @default(PENDING)
+
+  // Media
+  logoUrl  String?
+  coverUrl String?
+
+  // Details
+  priceRange PriceRange
+
+  // Relations
+  ownerId String
+  owner   User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  menus          RestaurantMenu[]
+  reviews        Review[]
+  taxonomies     RestaurantTaxonomy[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([slug])
+  @@fulltext([name, description]) // MySQL-specific, adjust for PostgreSQL if needed
+}
+
+enum RestaurantStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum PriceRange {
+  CHEAP
+  MODERATE
+  EXPENSIVE
+  LUXURY
+}
+
+// ============================================================================
+// Menu Management
+// ============================================================================
+
+model Menu {
+  id    String   @id @default(uuid())
+
+  // Basic Info
+  title       String
+  description String?
+  price       Decimal? @db.Decimal(10, 2)
+  isActive    Boolean  @default(true)
+
+  // Relations
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  restaurants RestaurantMenu[]
+  dishes      Dish[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([isActive])
+}
+
+model RestaurantMenu {
+  restaurantId String
+  menuId       String
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menu       Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+
+  @@id([restaurantId, menuId])
+  @@index([menuId])
+}
+
+// ============================================================================
+// Dish Management
+// ============================================================================
+
+model Dish {
+  id    String   @id @default(uuid())
+
+  // Basic Info
+  name        String
+  description String?
+  price       Decimal      @db.Decimal(10, 2)
+  imageUrl    String?
+
+  // Allergens
+  allergens String[]
+
+  // Order
+  order Int @default(0)
+
+  // Relations
+  menuId String
+  menu   Menu   @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([menuId])
+  @@index([order])
+}
+
+// ============================================================================
+// Taxonomy (Categories/Tags)
+// ============================================================================
+
+model Taxonomy {
+  id   String   @id @default(uuid())
+  type TaxonomyType
+  name String
+  slug String
+
+  // Relations
+  restaurants RestaurantTaxonomy[]
+
+  createdAt DateTime @default(now())
+
+  @@unique([type, slug])
+  @@index([type])
+}
+
+enum TaxonomyType {
+  CUISINE_TYPE
+  RESTAURANT_FEATURE
+  DIETARY
+  AMBIANCE
+}
+
+model RestaurantTaxonomy {
+  restaurantId String
+  taxonomyId   String
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  taxonomy   Taxonomy   @relation(fields: [taxonomyId], references: [id], onDelete: Cascade)
+
+  @@id([restaurantId, taxonomyId])
+  @@index([taxonomyId])
+}
+
+// ============================================================================
+// Reviews & Ratings
+// ============================================================================
+
+model Review {
+  id    String   @id @default(uuid())
+
+  // Rating & Comment
+  rating  Int      @db.SmallInt
+  comment String
+  photos  String[]
+
+  // Relations
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([restaurantId, userId])
+  @@index([restaurantId])
+  @@index([userId])
+  @@index([rating])
+}
+
+// ============================================================================
+// Subscriptions & Billing
+// ============================================================================
+
+model Subscription {
+  id    String   @id @default(uuid())
+
+  // Dates
+  startDate DateTime
+  endDate   DateTime
+  status    SubscriptionStatus
+
+  // Stripe Info
+  planId  String
+  amount  Decimal @db.Decimal(10, 2)
+  currency String  @default("EUR")
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  invoices Invoice[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([endDate])
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+model Invoice {
+  id    String   @id @default(uuid())
+
+  // Invoice Details
+  number           String   @unique
+  amountSubtotal   Decimal  @db.Decimal(10, 2)
+  taxAmount        Decimal  @db.Decimal(10, 2)
+  taxRate          Decimal  @db.Decimal(5, 2)
+  total            Decimal  @db.Decimal(10, 2)
+  status           InvoiceStatus
+  pdfUrl           String?
+
+  // Relations
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  issuedAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([issuedAt])
+}
+
+enum InvoiceStatus {
+  PAID
+  VOID
+  REFUNDED
+}
+
+// ============================================================================
+// Favorites (Social)
+// ============================================================================
+
+model Favorite {
+  id    String   @id @default(uuid())
+
+  // Relations
+  userId       String
+  restaurantId String
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, restaurantId])
+  @@index([userId])
+  @@index([restaurantId])
+}
+
+// ============================================================================
+// Audit Log (Optional)
+// ============================================================================
+
+model AuditLog {
+  id    String   @id @default(uuid())
+
+  action   String
+  entity   String
+  entityId String
+  userId   String?
+  changes  Json?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity])
+  @@index([createdAt])
+}
