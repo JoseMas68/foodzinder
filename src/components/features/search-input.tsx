@@ -1,83 +1,77 @@
-
 "use client";
 
-import { useCallback, useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface SearchInputProps {
   placeholder?: string;
   defaultValue?: string;
-  onSearch?: (query: string) => void;
   debounceMs?: number;
 }
 
 export function SearchInput({
-  placeholder = "Search...",
+  placeholder = "Buscar restaurantes...",
   defaultValue = "",
-  onSearch,
   debounceMs = 300,
 }: SearchInputProps) {
-  const [value, setValue] = useState(defaultValue);
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [query, setQuery] = useState(defaultValue);
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const updateURL = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set("q", value);
+    } else {
+      params.delete("q");
+    }
+    router.push(`/restaurants?${params.toString()}`);
+  };
 
   useEffect(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
     }
 
-    debounceTimerRef.current = setTimeout(() => {
-      if (onSearch) {
-        onSearch(value);
-      }
+    debounceRef.current = setTimeout(() => {
+      updateURL(query);
     }, debounceMs);
 
     return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
       }
     };
-  }, [value, debounceMs, onSearch]);
+  }, [query, debounceMs, searchParams]);
 
-  const handleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setValue(e.target.value);
-    },
-    []
-  );
-
-  const handleClear = useCallback(() => {
-    setValue("");
-  }, []);
+  const handleClear = () => {
+    setQuery("");
+    updateURL("");
+  };
 
   return (
     <div className="relative w-full">
-      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
       <Input
         type="text"
         placeholder={placeholder}
-        value={value}
-        onChange={handleChange}
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
         className="pl-10 pr-10"
-        aria-label="Search"
-        role="searchbox"
       />
-
-      {value && (
-        <button
+      {query && (
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={handleClear}
-          className={cn(
-            "absolute right-3 top-1/2 transform -translate-y-1/2",
-            "p-1 rounded-sm text-gray-400 hover:text-gray-600",
-            "transition-colors duration-200"
-          )}
-          aria-label="Clear search"
-          type="button"
+          className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
         >
-          <X className="w-4 h-4" />
-        </button>
+          <X className="h-4 w-4" />
+        </Button>
       )}
     </div>
   );

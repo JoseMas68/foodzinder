@@ -1,149 +1,135 @@
 
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
-
-interface RestaurantFilters {
-  priceRange?: ("CHEAP" | "MODERATE" | "EXPENSIVE" | "LUXURY")[];
-  cuisineTypes?: string[];
-  minRating?: number;
-}
+import { useRouter, useSearchParams } from "next/navigation";
+import type { PriceRange } from "@/types";
 
 interface FilterBarProps {
-  onFilterChange: (filters: RestaurantFilters) => void;
   taxonomies?: Array<{ id: string; name: string }>;
 }
 
-export function FilterBar({
-  onFilterChange,
-  taxonomies = [],
-}: FilterBarProps) {
-  const [filters, setFilters] = useState<RestaurantFilters>({
-    priceRange: [],
-    cuisineTypes: [],
-    minRating: undefined,
-  });
+export function FilterBar({ taxonomies = [] }: FilterBarProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const handlePriceRangeChange = useCallback(
-    (priceRange: "CHEAP" | "MODERATE" | "EXPENSIVE" | "LUXURY") => {
-      setFilters((prev) => {
-        const currentPrices = prev.priceRange || [];
-        const newPrices = currentPrices.includes(priceRange)
-          ? currentPrices.filter((p) => p !== priceRange)
-          : [...currentPrices, priceRange];
-
-        const updatedFilters = {
-          ...prev,
-          priceRange: newPrices.length > 0 ? newPrices : undefined,
-        };
-
-        onFilterChange(updatedFilters);
-        return updatedFilters;
-      });
-    },
-    [onFilterChange]
+  // Initialize state from URL
+  const [selectedPriceRange, setSelectedPriceRange] = useState<PriceRange[]>(
+    (searchParams.get("priceRange")?.split(",") as PriceRange[]) || []
+  );
+  const [selectedCuisines, setSelectedCuisines] = useState<string[]>(
+    searchParams.get("cuisineTypes")?.split(",") || []
+  );
+  const [selectedRating, setSelectedRating] = useState<number | null>(
+    searchParams.get("minRating") ? Number(searchParams.get("minRating")) : null
   );
 
-  const handleCuisineChange = useCallback(
-    (cuisineId: string) => {
-      setFilters((prev) => {
-        const currentCuisines = prev.cuisineTypes || [];
-        const newCuisines = currentCuisines.includes(cuisineId)
-          ? currentCuisines.filter((c) => c !== cuisineId)
-          : [...currentCuisines, cuisineId];
+  const updateURL = () => {
+    const params = new URLSearchParams(searchParams);
 
-        const updatedFilters = {
-          ...prev,
-          cuisineTypes: newCuisines.length > 0 ? newCuisines : undefined,
-        };
+    if (selectedPriceRange.length > 0) {
+      params.set("priceRange", selectedPriceRange.join(","));
+    } else {
+      params.delete("priceRange");
+    }
 
-        onFilterChange(updatedFilters);
-        return updatedFilters;
-      });
-    },
-    [onFilterChange]
-  );
+    if (selectedCuisines.length > 0) {
+      params.set("cuisineTypes", selectedCuisines.join(","));
+    } else {
+      params.delete("cuisineTypes");
+    }
 
-  const handleRatingChange = useCallback(
-    (rating: number) => {
-      setFilters((prev) => {
-        const updatedFilters = {
-          ...prev,
-          minRating: prev.minRating === rating ? undefined : rating,
-        };
+    if (selectedRating) {
+      params.set("minRating", selectedRating.toString());
+    } else {
+      params.delete("minRating");
+    }
 
-        onFilterChange(updatedFilters);
-        return updatedFilters;
-      });
-    },
-    [onFilterChange]
-  );
+    router.push(`/restaurants?${params.toString()}`);
+  };
 
-  const handleReset = useCallback(() => {
-    const resetFilters: RestaurantFilters = {
-      priceRange: undefined,
-      cuisineTypes: undefined,
-      minRating: undefined,
-    };
+  // Update URL whenever filters change
+  useEffect(() => {
+    updateURL();
+  }, [selectedPriceRange, selectedCuisines, selectedRating]);
 
-    setFilters(resetFilters);
-    onFilterChange(resetFilters);
-  }, [onFilterChange]);
+  const handlePriceRangeChange = (priceRange: PriceRange) => {
+    setSelectedPriceRange((prev) =>
+      prev.includes(priceRange)
+        ? prev.filter((p) => p !== priceRange)
+        : [...prev, priceRange]
+    );
+  };
+
+  const handleCuisineChange = (cuisineId: string) => {
+    setSelectedCuisines((prev) =>
+      prev.includes(cuisineId)
+        ? prev.filter((c) => c !== cuisineId)
+        : [...prev, cuisineId]
+    );
+  };
+
+  const handleRatingChange = (rating: number) => {
+    setSelectedRating((prev) => (prev === rating ? null : rating));
+  };
+
+  const handleReset = () => {
+    setSelectedPriceRange([]);
+    setSelectedCuisines([]);
+    setSelectedRating(null);
+  };
 
   const activeFilterCount =
-    (filters.priceRange?.length || 0) +
-    (filters.cuisineTypes?.length || 0) +
-    (filters.minRating ? 1 : 0);
+    selectedPriceRange.length + selectedCuisines.length + (selectedRating ? 1 : 0);
 
-  const priceRanges: Array<"CHEAP" | "MODERATE" | "EXPENSIVE" | "LUXURY"> = [
+  const priceRanges: PriceRange[] = [
     "CHEAP",
     "MODERATE",
     "EXPENSIVE",
     "LUXURY",
   ];
 
+  const priceRangeLabel: Record<PriceRange, string> = {
+    CHEAP: "$",
+    MODERATE: "$$",
+    EXPENSIVE: "$$$",
+    LUXURY: "$$$$",
+  };
+
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
+          <Button variant="outline" size="sm" className="gap-2">
             Price Range
-            {filters.priceRange && filters.priceRange.length > 0 && (
+            {selectedPriceRange.length > 0 && (
               <Badge variant="secondary" className="ml-2">
-                {filters.priceRange.length}
+                {selectedPriceRange.length}
               </Badge>
             )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-48">
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-gray-900">
-              Price Range
-            </h4>
-
+            <h4 className="text-sm font-semibold">Price Range</h4>
             {priceRanges.map((priceRange) => (
               <div key={priceRange} className="flex items-center gap-2">
                 <Checkbox
-                  id={`price-` + priceRange}
-                  checked={filters.priceRange?.includes(priceRange) || false}
+                  id={`price-${priceRange}`}
+                  checked={selectedPriceRange.includes(priceRange)}
                   onCheckedChange={() => handlePriceRangeChange(priceRange)}
                 />
                 <Label
-                  htmlFor={`price-` + priceRange}
+                  htmlFor={`price-${priceRange}`}
                   className="text-sm font-normal cursor-pointer"
                 >
-                  {priceRange.charAt(0).toUpperCase() +
-                    priceRange.slice(1).toLowerCase()}
+                  {priceRangeLabel[priceRange]}
                 </Label>
               </div>
             ))}
@@ -154,42 +140,28 @@ export function FilterBar({
       {taxonomies.length > 0 && (
         <Popover>
           <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
+            <Button variant="outline" size="sm" className="gap-2">
               Cuisine Type
-              {filters.cuisineTypes && filters.cuisineTypes.length > 0 && (
+              {selectedCuisines.length > 0 && (
                 <Badge variant="secondary" className="ml-2">
-                  {filters.cuisineTypes.length}
+                  {selectedCuisines.length}
                 </Badge>
               )}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-48">
             <div className="space-y-3">
-              <h4 className="text-sm font-semibold text-gray-900">
-                Cuisine Types
-              </h4>
-
+              <h4 className="text-sm font-semibold">Cuisine Types</h4>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {taxonomies.map((taxonomy) => (
-                  <div
-                    key={taxonomy.id}
-                    className="flex items-center gap-2"
-                  >
+                  <div key={taxonomy.id} className="flex items-center gap-2">
                     <Checkbox
-                      id={`cuisine-` + taxonomy.id}
-                      checked={
-                        filters.cuisineTypes?.includes(taxonomy.id) || false
-                      }
-                      onCheckedChange={() =>
-                        handleCuisineChange(taxonomy.id)
-                      }
+                      id={`cuisine-${taxonomy.id}`}
+                      checked={selectedCuisines.includes(taxonomy.id)}
+                      onCheckedChange={() => handleCuisineChange(taxonomy.id)}
                     />
                     <Label
-                      htmlFor={`cuisine-` + taxonomy.id}
+                      htmlFor={`cuisine-${taxonomy.id}`}
                       className="text-sm font-normal cursor-pointer"
                     >
                       {taxonomy.name}
@@ -204,32 +176,23 @@ export function FilterBar({
 
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-          >
+          <Button variant="outline" size="sm" className="gap-2">
             Min Rating
-            {filters.minRating && (
+            {selectedRating && (
               <Badge variant="secondary" className="ml-2">
-                {filters.minRating}+
+                {selectedRating}+
               </Badge>
             )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-48">
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-gray-900">
-              Minimum Rating
-            </h4>
-
+            <h4 className="text-sm font-semibold">Minimum Rating</h4>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((rating) => (
                 <Button
                   key={rating}
-                  variant={
-                    filters.minRating === rating ? "default" : "outline"
-                  }
+                  variant={selectedRating === rating ? "default" : "outline"}
                   size="sm"
                   onClick={() => handleRatingChange(rating)}
                   className="w-8 h-8 p-0"
@@ -238,12 +201,11 @@ export function FilterBar({
                 </Button>
               ))}
             </div>
-
-            {filters.minRating && (
+            {selectedRating && (
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleRatingChange(filters.minRating!)}
+                onClick={() => setSelectedRating(null)}
                 className="w-full text-xs"
               >
                 Clear
@@ -253,23 +215,21 @@ export function FilterBar({
         </PopoverContent>
       </Popover>
 
-      {activeFilterCount > 0 && <Separator orientation="vertical" className="h-6" />}
-
       {activeFilterCount > 0 && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleReset}
-          className="text-xs"
-        >
-          Reset Filters
-        </Button>
-      )}
-
-      {activeFilterCount > 0 && (
-        <Badge variant="outline" className="bg-blue-50">
-          {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active
-        </Badge>
+        <>
+          <Separator orientation="vertical" className="h-6" />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleReset}
+            className="text-xs"
+          >
+            Reset Filters
+          </Button>
+          <Badge variant="outline" className="bg-blue-50">
+            {activeFilterCount} filter{activeFilterCount > 1 ? "s" : ""} active
+          </Badge>
+        </>
       )}
     </div>
   );

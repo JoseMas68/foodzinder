@@ -8,10 +8,77 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 ## [Unreleased]
 
 ### Pendiente
-- FASE 2 (v0.2.3b): Layout público + Página de búsqueda
 - FASE 3 (v0.2.3c): Página de detalle de restaurante
 - Dashboard de Owner
 - Integración con Meilisearch para búsqueda avanzada
+
+---
+
+## [0.2.3b] - 2025-12-29
+
+### Added - Layout Público + Página de Búsqueda
+
+#### Componentes de Layout
+
+**1. PublicHeader** - `src/components/layout/public-header.tsx`
+- ✨ Header con logo y navegación
+- ✨ Links a Inicio (/), Explorar (/restaurants)
+- ✨ Responsive: desktop nav oculto en móvil
+
+**2. PublicFooter** - `src/components/layout/public-footer.tsx`
+- ✨ Footer simple con copyright
+- ✨ Auto-posicionado al final con flexbox
+
+**3. Layout Público** - `src/app/(public)/layout.tsx`
+- ✨ Route group (public) para todas las páginas públicas
+- ✨ Wrappea contenido con Header, main, Footer
+- ✨ Flex layout para footer sticky
+
+#### Página de Búsqueda y Exploración
+
+**4. Página de Restaurantes** - `src/app/(public)/restaurants/page.tsx`
+- ✨ Server Component que maneja búsqueda y filtros
+- ✨ Integración con SearchInput + FilterBar + RestaurantGrid
+- ✨ Obtiene restaurantes con searchRestaurants query
+- ✨ Obtiene taxonomías CUISINE_TYPE para filtros
+- ✨ Carga stats (rating, count) para cada restaurante
+- ✨ URL-based filtros (q, priceRange, cuisineTypes, page)
+
+#### Componentes Actualizados
+
+**5. SearchInput** - Actualizado con URL sync
+- ✨ Ahora es client component con useRouter + useSearchParams
+- ✨ Debounce 300ms antes de actualizar URL
+- ✨ Sincroniza query param `q` automáticamente
+- ✨ Clear button limpia búsqueda y URL
+
+**6. FilterBar** - Actualizado con URL sync
+- ✨ Ahora es client component con useRouter + useSearchParams
+- ✨ Sincroniza URL params: priceRange, cuisineTypes, minRating
+- ✨ Inicializa estado desde URL (bookmarkeable)
+- ✨ Reset button limpia todos los filtros y URL
+
+#### Archivos Creados
+- ✨ 3 componentes de layout en `src/components/layout/`
+- ✨ 1 layout público en `src/app/(public)/`
+- ✨ 1 página de búsqueda en `src/app/(public)/restaurants/`
+- ✨ Actualización de SearchInput con URL state
+- ✨ Actualización de FilterBar con URL state
+
+### Features
+- 🚀 Página pública totalmente funcional de búsqueda
+- 🚀 Filtros URL-based (bookmarkeable, shareable)
+- 🚀 Layout consistente con Header y Footer
+- 🚀 Integración Server + Client components
+- 🚀 TypeScript Strict Mode - All components typed
+- 🚀 Responsive design (mobile-first)
+- 🚀 Performance: debounce en búsqueda y filtros
+
+### Testing
+- ✅ TypeScript compilation PASS
+- ✅ Página accesible en /restaurants
+- ✅ Búsqueda y filtros funcionales
+- ✅ URL params sincronizados correctamente
 
 ---
 
