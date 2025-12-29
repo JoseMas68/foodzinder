@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
 import {
   getRestaurantWithDetails,
   getRestaurantStats,
 } from "@/server/queries/restaurants";
-import { RatingWidget, MenuSection } from "@/components/features";
+import { RatingWidget, MenuSection, ReviewForm } from "@/components/features";
 import { Badge, Separator } from "@/components/ui";
 import { formatPriceRange } from "@/lib/format";
+import { getUserReviewForRestaurant } from "@/server/actions/reviews";
 import Image from "next/image";
 
 interface PageProps {
@@ -21,6 +23,14 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
   }
 
   const stats = await getRestaurantStats(restaurant.id);
+
+  // Obtener autenticación del usuario
+  const { userId } = await auth();
+
+  // Verificar si el usuario tiene una review existente
+  const userReview = userId
+    ? await getUserReviewForRestaurant(restaurant.id)
+    : null;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -112,44 +122,76 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
 
       {/* Reviews Section */}
       <section>
-        <h2 className="text-3xl font-bold mb-6">Reseñas</h2>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-3xl font-bold">Reseñas</h2>
 
+          {/* Botón para crear review (solo si el usuario está autenticado) */}
+          {userId && (
+            <ReviewForm
+              restaurantId={restaurant.id}
+              restaurantName={restaurant.name}
+              hasExistingReview={!!userReview}
+            />
+          )}
+        </div>
+
+        {/* Mostrar review del usuario si existe */}
+        {userReview && (
+          <div className="mb-6 border-2 border-primary/20 rounded-lg p-6 bg-primary/5">
+            <div className="flex items-center gap-2 mb-2">
+              <Badge variant="default">Tu reseña</Badge>
+            </div>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="font-semibold">Tú</div>
+              <RatingWidget rating={userReview.rating} size="sm" />
+              <span className="text-sm text-muted-foreground">
+                {new Date(userReview.createdAt).toLocaleDateString("es-ES")}
+              </span>
+            </div>
+            <p className="text-muted-foreground">{userReview.comment}</p>
+          </div>
+        )}
+
+        {/* Lista de otras reviews */}
         {restaurant.reviews.length === 0 ? (
           <p className="text-muted-foreground">
             Este restaurante aún no tiene reseñas.
+            {userId && " ¡Sé el primero en dejar una!"}
           </p>
         ) : (
           <div className="space-y-6">
-            {restaurant.reviews.map((review) => (
-              <div key={review.id} className="border rounded-lg p-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="font-semibold">
-                    {review.user.firstName || "Usuario"}
+            {restaurant.reviews
+              .filter((review) => review.userId !== userId) // Excluir review del usuario
+              .map((review) => (
+                <div key={review.id} className="border rounded-lg p-6">
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="font-semibold">
+                      {review.user.firstName || "Usuario"}
+                    </div>
+                    <RatingWidget rating={review.rating} size="sm" />
+                    <span className="text-sm text-muted-foreground">
+                      {new Date(review.createdAt).toLocaleDateString("es-ES")}
+                    </span>
                   </div>
-                  <RatingWidget rating={review.rating} size="sm" />
-                  <span className="text-sm text-muted-foreground">
-                    {new Date(review.createdAt).toLocaleDateString("es-ES")}
-                  </span>
+
+                  <p className="text-muted-foreground">{review.comment}</p>
+
+                  {review.photos && review.photos.length > 0 && (
+                    <div className="flex gap-2 mt-4">
+                      {review.photos.map((photo, idx) => (
+                        <Image
+                          key={idx}
+                          src={photo}
+                          alt={`Review photo ${idx + 1}`}
+                          width={100}
+                          height={100}
+                          className="rounded object-cover"
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-
-                <p className="text-muted-foreground">{review.comment}</p>
-
-                {review.photos && review.photos.length > 0 && (
-                  <div className="flex gap-2 mt-4">
-                    {review.photos.map((photo, idx) => (
-                      <Image
-                        key={idx}
-                        src={photo}
-                        alt={`Review photo ${idx + 1}`}
-                        width={100}
-                        height={100}
-                        className="rounded object-cover"
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
+              ))}
           </div>
         )}
       </section>
