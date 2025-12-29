@@ -178,3 +178,20 @@ export type SearchFilters = {
   radius?: number;
   minRating?: number;
 };
+
+/**
+ * Extended types for public pages (v0.2.3)
+ */
+export type RestaurantWithDetails = Restaurant & {
+  taxonomies: Array<{ taxonomy: Taxonomy }>;
+  menus: Array<{
+    menu: Menu & {
+      dishes: Dish[];
+    };
+  }>;
+  reviews: Array<Review & { user: User }>;
+};
+
+export type ReviewWithUser = Review & {
+  user: User;
+};

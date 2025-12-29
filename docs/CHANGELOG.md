@@ -8,10 +8,78 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 ## [Unreleased]
 
 ### Pendiente
-- Queries avanzadas (searchRestaurants, getRestaurantWithMenus)
-- Páginas públicas (Search, Detail)
+- FASE 2 (v0.2.3b): Layout público + Página de búsqueda
+- FASE 3 (v0.2.3c): Página de detalle de restaurante
 - Dashboard de Owner
 - Integración con Meilisearch para búsqueda avanzada
+
+---
+
+## [0.2.3a] - 2025-12-29
+
+### Added - Queries Avanzadas para Páginas Públicas
+
+#### 4 Nuevas Queries en `src/server/queries/restaurants.ts`
+
+**1. searchRestaurants(filters, page, limit)** - Búsqueda avanzada con filtros
+- ✨ Búsqueda de texto en nombre y descripción (case-insensitive)
+- ✨ Filtro por rango de precio (CHEAP, MODERATE, EXPENSIVE, LUXURY)
+- ✨ Filtro por taxonomías (cuisine types, features, etc.)
+- ✨ Paginación (12 restaurantes por página por defecto)
+- ✨ Include taxonomías para mostrar badges
+- ✨ Ordenamiento por fecha de creación (más recientes primero)
+- ✨ Manejo de errores con fallback a datos vacíos
+
+**2. getRestaurantWithDetails(slug)** - Datos completos del restaurante
+- ✨ Obtiene restaurante aprobado por slug
+- ✨ Include: taxonomías, menus activos, dishes ordenados, 10 reviews recientes
+- ✨ Join con tabla de usuarios para información de reviewers
+- ✨ Ordenamiento de dishes por campo `order`
+- ✨ Limitado a 10 reviews iniciales (paginación en v0.3.0)
+- ✨ Usado en página de detalle `/restaurants/[slug]`
+
+**3. getTaxonomies(type?)** - Obtener opciones de filtro
+- ✨ Obtiene taxonomías ordenadas alfabéticamente
+- ✨ Filtro opcional por tipo (CUISINE_TYPE, RESTAURANT_FEATURE, DIETARY, AMBIANCE)
+- ✨ Usado para poblar opciones en FilterBar
+- ✨ Cached con React cache() para mejor rendimiento
+
+**4. getRestaurantReviews(restaurantId, page, limit)** - Reviews paginadas
+- ✨ Obtiene reviews de un restaurante con datos del usuario
+- ✨ Paginación (10 reviews por página por defecto)
+- ✨ Ordenadas por fecha más reciente
+- ✨ Include información del usuario (name, email, etc.)
+- ✨ Base para "cargar más reseñas" en página de detalle
+
+#### 2 Tipos Extendidos en `src/types/index.ts`
+
+**1. RestaurantWithDetails** - Type para página de detalle
+```typescript
+Restaurant & {
+  taxonomies: Array<{ taxonomy: Taxonomy }>;
+  menus: Array<{ menu: Menu & { dishes: Dish[] } }>;
+  reviews: Array<Review & { user: User }>;
+}
+```
+
+**2. ReviewWithUser** - Type para reviews con datos de usuario
+```typescript
+Review & { user: User }
+```
+
+### Features
+- 🚀 Backend completamente preparado para páginas públicas
+- 🚀 Queries con relaciones Prisma optimizadas
+- 🚀 Filtrado dinámico sin N+1 queries
+- 🚀 Cached queries con React cache() para mejor performance
+- 🚀 Error handling robusto en todas las queries
+- 🚀 TypeScript Strict Mode - All queries typed
+- 🚀 Soporte para relaciones complejas (taxonomies, menus, dishes, reviews)
+
+### Testing
+- ✅ TypeScript compilation PASS
+- ✅ Todas las queries exportadas correctamente
+- ✅ Tipos extendidos correctamente estructurados
 
 ---
 
