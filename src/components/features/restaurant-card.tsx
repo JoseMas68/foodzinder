@@ -38,7 +38,7 @@ export function RestaurantCard({
 
   return (
     <Link href={`/restaurants/${restaurant.slug}`}>
-      <Card className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer group">
+      <Card className="overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
         <div className="relative w-full h-40 bg-gray-200 overflow-hidden">
           {restaurant.coverUrl ? (
             <Image
@@ -67,16 +67,16 @@ export function RestaurantCard({
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold text-gray-900 truncate">
+              <h3 className="text-sm font-bold text-gray-900 truncate leading-tight">
                 {restaurant.name}
               </h3>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 leading-relaxed">
                 {formatPriceRange(restaurant.priceRange)}
               </p>
             </div>
           </div>
 
-          <p className="text-xs text-gray-600 line-clamp-2 mb-3">
+          <p className="text-xs text-gray-600 line-clamp-2 mb-3 leading-relaxed">
             {restaurant.description}
           </p>
 

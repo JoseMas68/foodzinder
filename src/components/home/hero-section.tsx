@@ -16,8 +16,13 @@ export function HeroSection({
   totalUsers,
 }: HeroSectionProps) {
   return (
-    <section className="relative flex items-center bg-gradient-to-br from-primary/10 via-background to-primary/5 py-24 md:py-32">
-      <div className="container mx-auto px-4 w-full">
+    <section className="relative flex items-center bg-gradient-to-br from-primary/10 via-background to-primary/5 py-24 md:py-32 overflow-hidden">
+      {/* Animated gradient orbs */}
+      <div className="absolute top-0 -left-4 w-72 h-72 bg-primary/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob" />
+      <div className="absolute top-0 -right-4 w-72 h-72 bg-purple-500/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000" />
+      <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-500/20 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000" />
+
+      <div className="container mx-auto px-4 w-full relative z-10">
         <div className="max-w-4xl mx-auto text-center space-y-8">
           {/* Title */}
           <div>
