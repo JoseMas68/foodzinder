@@ -8,9 +8,61 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 ## [Unreleased]
 
 ### Pendiente
-- FASE 3 (v0.2.3c): Página de detalle de restaurante
 - Dashboard de Owner
 - Integración con Meilisearch para búsqueda avanzada
+- Sistema de reseñas (v0.3.0)
+
+---
+
+## [0.2.3c] - 2025-12-29
+
+### Added - Página de Detalle de Restaurante
+
+#### Página Dinámica de Restaurante
+
+**1. Página de Detalle** - `src/app/(public)/restaurants/[slug]/page.tsx`
+- ✨ Server Component que obtiene datos del restaurante por slug
+- ✨ Validación 404 para restaurantes no encontrados
+- ✨ Hero section con imagen de portada
+- ✨ Info de restaurante: logo, nombre, descripción, rating
+- ✨ Stats dinámicos: número de reseñas, precio range
+- ✨ Badges con taxonomías (tipos de cocina, features)
+- ✨ Sección de menús con listado completo de dishes
+- ✨ Sección de reseñas con usuario, rating, fecha
+- ✨ Fotos de reseñas renderizadas
+- ✨ Meta tags dinámicos (generateMetadata)
+
+#### Características de Implementación
+
+**2. Integración de Componentes Feature**
+- ✨ RatingWidget para mostrar rating promedio del restaurante
+- ✨ MenuSection para cada menú activo
+- ✨ Datos de dishes con conversión de tipos Prisma (Decimal → number)
+- ✨ Manejo de null values (null → undefined para TypeScript)
+
+**3. Data Fetching**
+- ✨ Usa getRestaurantWithDetails query con todas las relaciones
+- ✨ Usa getRestaurantStats para rating y count de reseñas
+- ✨ Include: taxonomies, menus activos, dishes ordenados, 10 reviews
+
+#### Archivos Creados
+- ✨ 1 página dinámica en `src/app/(public)/restaurants/[slug]/page.tsx`
+- ✨ Type conversions para Decimal de Prisma
+- ✨ Metadata generada dinámicamente
+
+### Features
+- 🚀 Página de detalle completamente funcional y responsiva
+- 🚀 SEO optimizado con metadata dinámica
+- 🚀 Manejo completo de relaciones complejas
+- 🚀 TypeScript Strict Mode - All types properly converted
+- 🚀 Conversión segura de tipos Prisma (Decimal → number)
+- 🚀 Fallbacks para imágenes y datos opcionales
+
+### Testing
+- ✅ TypeScript compilation PASS
+- ✅ Página accesible en /restaurants/[slug]
+- ✅ Manejo de 404 para slugs no válidos
+- ✅ Todos los componentes renderizados correctamente
 
 ---
 
