@@ -1,7 +1,7 @@
 "use client";
 
-import { SearchInput } from "@/components/features";
 import { StatsCounter } from "./stats-counter";
+import { HeroSearch } from "./hero-search";
 import { Users, Star, UtensilsCrossed } from "lucide-react";
 
 interface HeroSectionProps {
@@ -32,10 +32,7 @@ export function HeroSection({
 
           {/* Search */}
           <div className="max-w-2xl mx-auto w-full">
-            <SearchInput
-              placeholder="Busca restaurantes, cocinas o platos..."
-              defaultValue=""
-            />
+            <HeroSearch placeholder="Busca restaurantes, cocinas o platos..." />
           </div>
 
           {/* Stats */}

@@ -7,22 +7,24 @@ import { SearchInput, FilterBar, RestaurantGrid } from "@/components/features";
 import type { PriceRange } from "@/types";
 
 interface PageProps {
-  searchParams: {
+  searchParams: Promise<{
     q?: string;
     priceRange?: string;
     cuisineTypes?: string;
     page?: string;
-  };
+  }>;
 }
 
 export default async function RestaurantsPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+
   const filters = {
-    q: searchParams.q,
-    priceRange: searchParams.priceRange?.split(",") as PriceRange[],
-    taxonomies: searchParams.cuisineTypes?.split(","),
+    q: params.q,
+    priceRange: params.priceRange?.split(",") as PriceRange[],
+    taxonomies: params.cuisineTypes?.split(","),
   };
 
-  const page = Number(searchParams.page) || 1;
+  const page = Number(params.page) || 1;
 
   const [restaurantsData, cuisineTaxonomies] = await Promise.all([
     searchRestaurants(filters, page, 12),
