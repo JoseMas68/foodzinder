@@ -11,16 +11,17 @@ export {
   SelectItem,
   SelectLabel,
 } from "./select"
-export {
-  useFormField,
-  Form,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-  FormField,
-} from "./form"
+// Form exports disabled - react-hook-form types issue
+// export {
+//   useFormField,
+//   Form,
+//   FormItem,
+//   FormLabel,
+//   FormControl,
+//   FormDescription,
+//   FormMessage,
+//   FormField,
+// } from "./form"
 
 // Contenido
 export {

@@ -9,11 +9,12 @@ import { formatPriceRange } from "@/lib/format";
 import Image from "next/image";
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export default async function RestaurantDetailPage({ params }: PageProps) {
-  const restaurant = await getRestaurantWithDetails(params.slug);
+  const { slug } = await params;
+  const restaurant = await getRestaurantWithDetails(slug);
 
   if (!restaurant) {
     notFound();
@@ -158,7 +159,8 @@ export default async function RestaurantDetailPage({ params }: PageProps) {
 
 // Metadata
 export async function generateMetadata({ params }: PageProps) {
-  const restaurant = await getRestaurantWithDetails(params.slug);
+  const { slug } = await params;
+  const restaurant = await getRestaurantWithDetails(slug);
 
   if (!restaurant) {
     return { title: "Restaurante no encontrado" };
