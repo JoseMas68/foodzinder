@@ -18,6 +18,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**.stripe.com",
       },
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.clerk.com",
+      },
+      {
+        protocol: "https",
+        hostname: "img.clerk.com",
+      },
     ],
   },
   headers: async () => {

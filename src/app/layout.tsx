@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
@@ -37,16 +38,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    // TODO: Enable ClerkProvider once Clerk keys are configured in .env
-    // <ClerkProvider>
-    <>
-      <html lang="es">
-        <body className={`${geist.variable} ${geistMono.variable} antialiased`}>
+    <ClerkProvider>
+      <html lang="es" suppressHydrationWarning>
+        <body
+          className={`${geist.variable} ${geistMono.variable} antialiased`}
+          suppressHydrationWarning
+        >
           {children}
           <Toaster />
         </body>
       </html>
-    </>
-    // </ClerkProvider>
+    </ClerkProvider>
   );
 }
