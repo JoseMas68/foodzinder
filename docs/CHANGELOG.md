@@ -14,6 +14,90 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [0.2.4] - 2025-12-29
+
+### Added - Home Page Moderna con Datos Reales
+
+#### Componentes de Home Page (6 componentes)
+
+**1. HeroSection** - `src/components/home/hero-section.tsx`
+- ✨ Hero grande con degradado moderno (600px altura)
+- ✨ Título principal con subtítulo destacado
+- ✨ SearchInput integrado para búsqueda directa
+- ✨ 3 stats animados: Restaurantes, Reseñas, Usuarios
+- ✨ Responsive: adapta altura y fuente en mobile
+
+**2. StatsCounter** - `src/components/home/stats-counter.tsx`
+- ✨ Contador animado con IntersectionObserver
+- ✨ Anima solo cuando entra en viewport
+- ✨ Soporte para números con separadores (1,234)
+- ✨ Icono + valor + etiqueta configurable
+- ✨ Duración de animación personalizable
+
+**3. CategoryBadges** - `src/components/home/category-badges.tsx`
+- ✨ Grid scrollable horizontal en mobile
+- ✨ Grid de 6 columnas en desktop
+- ✨ Badges clicables que filtran por tipo de cocina
+- ✨ Hover effect con scale transform
+- ✨ Fetch de taxonomías reales desde BD
+
+**4. HowItWorks** - `src/components/home/how-it-works.tsx`
+- ✨ 3 pasos: Busca → Descubre → Disfruta
+- ✨ Iconos de lucide-react circulares
+- ✨ Grid 3 columnas responsive
+- ✨ Descripciones claras de cada paso
+
+**5. FeaturedSection** - `src/components/home/featured-section.tsx`
+- ✨ Placeholder para "Mejores Ofertas" y "Lo Mejor para Ti"
+- ✨ Badge "Próximamente" indicador
+- ✨ Card dashed con mensaje de implementación futura
+
+**6. HomeFooter** - `src/components/home/home-footer.tsx`
+- ✨ 4 columnas: Producto, Empresa, Legal, Redes
+- ✨ Links funcionales a páginas internas y externas
+- ✨ Iconos de redes sociales (Facebook, Twitter, Instagram, LinkedIn)
+- ✨ Copyright dinámico con año actual
+
+#### Página Principal
+
+**7. HomePage (src/app/page.tsx)** - REEMPLAZADA COMPLETAMENTE
+- ✨ Server Component con fetch de datos en paralelo
+- ✨ Obtiene 8 restaurantes destacados con stats
+- ✨ Integra todos los componentes de home
+- ✨ Secciones alternadas con contraste visual (bg-muted/30)
+- ✨ Fallback si BD está vacía: "Sé el primero en agregar un restaurante"
+
+#### Utilidades CSS
+
+**8. Scrollbar Hide** - Agregado a `src/styles/globals.css`
+- ✨ CSS personalizado para ocultar scrollbar en badges
+- ✨ Compatible con: WebKit, Firefox, IE/Edge
+
+### Features
+- 🎨 Diseño moderno y atractivo (Airbnb/Booking style)
+- 🎨 Datos reales desde base de datos (no hardcodeados)
+- 🎨 Animaciones suaves en contadores y transiciones
+- 🎨 100% Responsive (mobile → tablet → desktop)
+- 🎨 TypeScript Strict Mode - All components properly typed
+- 🎨 Intersection Observer para animaciones on-scroll
+- 🎨 Stats hardcodeados temporalmente (agregados en v0.3.0)
+
+### Archivos Creados
+- ✨ 6 componentes en `src/components/home/`
+- ✨ 1 barrel export `index.ts`
+- ✨ CSS utilities en `globals.css`
+- ✨ HomePage completamente renovada en `src/app/page.tsx`
+
+### Testing
+- ✅ TypeScript compilation PASS
+- ✅ Página accesible en /
+- ✅ Animaciones funcionales en stats
+- ✅ Navegación correcta de CategoryBadges
+- ✅ Todos los componentes renderizados correctamente
+- ✅ Responsive design verificado
+
+---
+
 ## [0.2.3c] - 2025-12-29
 
 ### Added - Página de Detalle de Restaurante
