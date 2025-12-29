@@ -5,6 +5,7 @@ import {
 } from "@/server/queries/restaurants";
 import { FilterBar, RestaurantGrid, Pagination } from "@/components/features";
 import { SearchAutocomplete } from "@/components/features/search-autocomplete";
+import { RestaurantMapWrapper } from "@/components/features/restaurant-map-wrapper";
 import type { PriceRange } from "@/types";
 
 interface PageProps {
@@ -55,6 +56,14 @@ export default async function RestaurantsPage({ searchParams }: PageProps) {
         <SearchAutocomplete defaultValue={filters.q} />
         <FilterBar taxonomies={cuisineTaxonomies} />
       </div>
+
+      {/* Map - solo mostrar si hay resultados */}
+      {hasResults && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">Ubicación de Restaurantes</h2>
+          <RestaurantMapWrapper restaurants={restaurantsWithStats} />
+        </div>
+      )}
 
       <RestaurantGrid
         restaurants={restaurantsWithStats}

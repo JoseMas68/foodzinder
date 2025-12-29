@@ -107,3 +107,19 @@ html {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Leaflet map fixes */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background-color: transparent;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+}
+
+.leaflet-popup-content {
+  margin: 0;
+  width: auto;
+}
