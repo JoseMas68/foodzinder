@@ -1,4 +1,5 @@
 export { SearchInput } from "./search-input";
+export { SearchAutocomplete } from "./search-autocomplete";
 export { RestaurantCard } from "./restaurant-card";
 export { FilterBar } from "./filter-bar";
 export { RestaurantGrid } from "./restaurant-grid";

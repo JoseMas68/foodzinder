@@ -3,7 +3,8 @@ import {
   getTaxonomies,
   getRestaurantStats,
 } from "@/server/queries/restaurants";
-import { SearchInput, FilterBar, RestaurantGrid, Pagination } from "@/components/features";
+import { FilterBar, RestaurantGrid, Pagination } from "@/components/features";
+import { SearchAutocomplete } from "@/components/features/search-autocomplete";
 import type { PriceRange } from "@/types";
 
 interface PageProps {
@@ -51,7 +52,7 @@ export default async function RestaurantsPage({ searchParams }: PageProps) {
       <h1 className="text-4xl font-bold mb-8">Explorar Restaurantes</h1>
 
       <div className="mb-8 space-y-4">
-        <SearchInput defaultValue={filters.q} />
+        <SearchAutocomplete defaultValue={filters.q} />
         <FilterBar taxonomies={cuisineTaxonomies} />
       </div>
 
