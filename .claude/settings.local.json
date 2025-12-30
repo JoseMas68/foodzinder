@@ -11,7 +11,11 @@
       "Bash(git commit:*)",
       "Bash(tsx scripts/make-owner.ts:*)",
       "Bash(npx tsx:*)",
-      "Bash(npx shadcn@latest add:*)"
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill /F /PID 18428)",
+      "Bash(taskkill:*)",
+      "Bash(dir:*)"
     ]
   }
 }
