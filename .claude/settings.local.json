@@ -10,7 +10,8 @@
       "Bash(npm install:*)",
       "Bash(git commit:*)",
       "Bash(tsx scripts/make-owner.ts:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(npx shadcn@latest add:*)"
     ]
   }
 }

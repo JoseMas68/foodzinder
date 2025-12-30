@@ -8,6 +8,7 @@ import Link from 'next/link'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { getTaxonomies } from '@/server/queries/restaurants'
 
 interface EditRestaurantPageProps {
   params: Promise<{
@@ -36,7 +37,10 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
     redirect('/dashboard/restaurants')
   }
 
-  // Obtener restaurante
+  // Obtener tipos de cocina disponibles
+  const cuisineTypes = await getTaxonomies('CUISINE_TYPE')
+
+  // Obtener restaurante con todas sus relaciones
   const restaurant = await prisma.restaurant.findUnique({
     where: { id },
     select: {
@@ -53,6 +57,22 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
       status: true,
       logoUrl: true,
       coverUrl: true,
+      openingHours: {
+        select: {
+          dayOfWeek: true,
+          openTime: true,
+          closeTime: true,
+          isClosed: true,
+        },
+        orderBy: {
+          dayOfWeek: 'asc',
+        },
+      },
+      taxonomies: {
+        select: {
+          taxonomyId: true,
+        },
+      },
     },
   })
 
@@ -142,9 +162,19 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
           priceRange: restaurant.priceRange,
           phone: restaurant.phone || undefined,
           website: restaurant.website || undefined,
+          logoUrl: restaurant.logoUrl || undefined,
+          coverUrl: restaurant.coverUrl || undefined,
+          cuisineTypeIds: restaurant.taxonomies.map(t => t.taxonomyId),
+          openingHours: restaurant.openingHours.map(h => ({
+            dayOfWeek: h.dayOfWeek,
+            openTime: h.openTime || undefined,
+            closeTime: h.closeTime || undefined,
+            isClosed: h.isClosed,
+          })),
         }}
         onSubmit={handleUpdateRestaurant}
         isEditing
+        cuisineTypes={cuisineTypes}
       />
     </div>
   )

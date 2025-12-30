@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import Link from 'next/link'
 import { ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { getTaxonomies } from '@/server/queries/restaurants'
 
 export default async function NewRestaurantPage() {
   const user = await getCurrentUser()
@@ -17,6 +18,9 @@ export default async function NewRestaurantPage() {
   if (user.role !== 'OWNER' && user.role !== 'ADMIN') {
     redirect('/')
   }
+
+  // Obtener tipos de cocina para el selector
+  const cuisineTypes = await getTaxonomies('CUISINE_TYPE')
 
   async function handleCreateRestaurant(data: any) {
     'use server'
@@ -59,7 +63,7 @@ export default async function NewRestaurantPage() {
       </Card>
 
       {/* Form */}
-      <RestaurantForm onSubmit={handleCreateRestaurant} />
+      <RestaurantForm onSubmit={handleCreateRestaurant} cuisineTypes={cuisineTypes} />
     </div>
   )
 }

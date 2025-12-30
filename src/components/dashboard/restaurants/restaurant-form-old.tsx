@@ -23,20 +23,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Image as ImageIcon, Clock, Utensils } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useState } from 'react'
-import { ImageUpload } from '@/components/ui/image-upload'
-import { OpeningHoursInput } from './opening-hours-input'
-import { CuisineTypeSelector } from './cuisine-type-selector'
 
 interface RestaurantFormProps {
-  initialData?: Partial<RestaurantCreate> & {
-    id?: string
-    cuisineTypeIds?: string[]
-  }
+  initialData?: Partial<RestaurantCreate>
   onSubmit: (data: RestaurantCreate) => Promise<{ success: boolean; error?: string }>
   isEditing?: boolean
-  cuisineTypes: Array<{ id: string; name: string; slug: string }>
 }
 
 const priceRangeLabels = {
@@ -46,7 +39,7 @@ const priceRangeLabels = {
   LUXURY: 'Lujo (€€€€)',
 }
 
-export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisineTypes }: RestaurantFormProps) {
+export function RestaurantForm({ initialData, onSubmit, isEditing = false }: RestaurantFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<RestaurantCreate>({
@@ -60,10 +53,6 @@ export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisi
       priceRange: initialData?.priceRange || 'MODERATE',
       phone: initialData?.phone || '',
       website: initialData?.website || '',
-      logoUrl: initialData?.logoUrl || '',
-      coverUrl: initialData?.coverUrl || '',
-      cuisineTypeIds: initialData?.cuisineTypeIds || [],
-      openingHours: initialData?.openingHours || [],
     },
   })
 
@@ -85,64 +74,6 @@ export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisi
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Imágenes */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5" />
-              Imágenes del Restaurante
-            </CardTitle>
-            <CardDescription>
-              Sube un logo y una imagen de portada para tu restaurante
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <FormField
-              control={form.control}
-              name="logoUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Logo del Restaurante</FormLabel>
-                  <FormControl>
-                    <ImageUpload
-                      value={field.value}
-                      onChange={field.onChange}
-                      onRemove={() => field.onChange('')}
-                      endpoint="restaurantLogo"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Imagen cuadrada recomendada (mín. 400x400px)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="coverUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Imagen de Portada</FormLabel>
-                  <FormControl>
-                    <ImageUpload
-                      value={field.value}
-                      onChange={field.onChange}
-                      onRemove={() => field.onChange('')}
-                      endpoint="restaurantCover"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Imagen panorámica recomendada (mín. 1200x600px)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
         {/* Información Básica */}
         <Card>
           <CardHeader>
@@ -175,12 +106,12 @@ export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisi
                   <FormControl>
                     <Textarea
                       placeholder="Describe tu restaurante, especialidades, ambiente..."
-                      className="min-h-32 resize-none"
+                      className="min-h-24 resize-none"
                       {...field}
                     />
                   </FormControl>
                   <FormDescription>
-                    Mínimo 10 caracteres. Cuenta a tus clientes qué hace especial a tu restaurante.
+                    Mínimo 10 caracteres
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -207,37 +138,6 @@ export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisi
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Tipo de Cocina */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Utensils className="h-5 w-5" />
-              Tipo de Cocina
-            </CardTitle>
-            <CardDescription>
-              Selecciona los tipos de cocina que ofrece tu restaurante
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="cuisineTypeIds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <CuisineTypeSelector
-                      value={field.value}
-                      onChange={field.onChange}
-                      taxonomies={cuisineTypes}
-                    />
-                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -311,39 +211,6 @@ export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisi
                 )}
               />
             </div>
-            <FormDescription>
-              Las coordenadas ayudan a mostrar tu restaurante en el mapa. Puedes obtenerlas desde Google Maps.
-            </FormDescription>
-          </CardContent>
-        </Card>
-
-        {/* Horarios de Apertura */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              Horarios de Apertura
-            </CardTitle>
-            <CardDescription>
-              Configura los horarios de tu restaurante para cada día de la semana
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="openingHours"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <OpeningHoursInput
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </CardContent>
         </Card>
 

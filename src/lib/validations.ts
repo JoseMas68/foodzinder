@@ -23,6 +23,10 @@ export const restaurantCreateSchema = z.object({
   priceRange: z.enum(["CHEAP", "MODERATE", "EXPENSIVE", "LUXURY"]),
   phone: z.string().optional(),
   website: z.string().url("URL inválida").optional().or(z.literal("")),
+  logoUrl: z.string().url("URL inválida").optional().or(z.literal("")),
+  coverUrl: z.string().url("URL inválida").optional().or(z.literal("")),
+  cuisineTypeIds: z.array(z.string()).optional(),
+  openingHours: z.array(openingHourSchema).optional(),
 });
 
 export const restaurantUpdateSchema = restaurantCreateSchema.partial();

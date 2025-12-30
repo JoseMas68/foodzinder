@@ -28,12 +28,29 @@ export async function createRestaurant(formData: any) {
       slug = `${slug}-${Math.random().toString(36).substring(2, 7)}`;
     }
 
+    // Separar datos de relaciones
+    const { cuisineTypeIds, openingHours, ...restaurantData } = validated;
+
     const restaurant = await prisma.restaurant.create({
       data: {
-        ...validated,
+        ...restaurantData,
         slug,
         ownerId: user.id,
         status: "PENDING", // Siempre empieza en pendiente
+        // Crear horarios de apertura si se proporcionaron
+        ...(openingHours && openingHours.length > 0 && {
+          openingHours: {
+            create: openingHours,
+          },
+        }),
+        // Conectar taxonomías si se proporcionaron
+        ...(cuisineTypeIds && cuisineTypeIds.length > 0 && {
+          taxonomies: {
+            create: cuisineTypeIds.map(taxonomyId => ({
+              taxonomyId,
+            })),
+          },
+        }),
       },
     });
 
@@ -72,20 +89,48 @@ export async function updateRestaurant(id: string, formData: any) {
     // Validar datos
     const validated = restaurantUpdateSchema.parse(formData);
 
-    // Si el nombre cambia, ¿actualizamos el slug? 
-    // Generalmente es mejor no cambiar slugs para SEO, pero aquí permitimos cambios menores o manuales si fuera necesario.
-    // Por ahora, solo si el nombre cambia drásticamente y no es el mismo.
-    let updateData: any = { ...validated };
+    // Separar datos de relaciones
+    const { cuisineTypeIds, openingHours, ...restaurantData } = validated;
 
-    if (validated.name && validated.name !== existingRestaurant.name) {
-      // Opcional: actualizar slug si se desea
-      // updateData.slug = generateSlug(validated.name);
-    }
-
+    // Actualizar restaurante y sus relaciones
     const restaurant = await prisma.restaurant.update({
       where: { id },
-      data: updateData,
+      data: {
+        ...restaurantData,
+      },
     });
+
+    // Actualizar horarios de apertura si se proporcionaron
+    if (openingHours && openingHours.length > 0) {
+      // Eliminar horarios existentes
+      await prisma.openingHour.deleteMany({
+        where: { restaurantId: id },
+      });
+      // Crear nuevos horarios
+      await prisma.openingHour.createMany({
+        data: openingHours.map(h => ({
+          ...h,
+          restaurantId: id,
+        })),
+      });
+    }
+
+    // Actualizar taxonomías si se proporcionaron
+    if (cuisineTypeIds !== undefined) {
+      // Eliminar taxonomías existentes
+      await prisma.restaurantTaxonomy.deleteMany({
+        where: { restaurantId: id },
+      });
+      // Crear nuevas taxonomías
+      if (cuisineTypeIds.length > 0) {
+        await prisma.restaurantTaxonomy.createMany({
+          data: cuisineTypeIds.map(taxonomyId => ({
+            restaurantId: id,
+            taxonomyId,
+          })),
+        });
+      }
+    }
 
     await syncRestaurantToMeilisearch(id);
 
