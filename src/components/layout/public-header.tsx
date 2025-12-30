@@ -32,6 +32,11 @@ export function PublicHeader() {
               </SignUpButton>
             </SignedOut>
             <SignedIn>
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm" className="font-medium">
+                  Mi Dashboard
+                </Button>
+              </Link>
               <UserButton
                 appearance={{
                   elements: {
@@ -58,6 +63,11 @@ export function PublicHeader() {
               </SignInButton>
             </SignedOut>
             <SignedIn>
+              <Link href="/dashboard">
+                <Button variant="ghost" size="sm">
+                  Dashboard
+                </Button>
+              </Link>
               <UserButton />
             </SignedIn>
           </div>
