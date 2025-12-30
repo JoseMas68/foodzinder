@@ -10,6 +10,8 @@ export default function SignInPage() {
             footerActionLink: 'text-[#FF6B9D] hover:text-[#FF6B9D]/90',
           }
         }}
+        forceRedirectUrl="/dashboard"
+        signUpUrl="/sign-up"
       />
     </div>
   )
