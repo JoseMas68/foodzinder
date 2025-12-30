@@ -12,6 +12,18 @@ export const userUpdateSchema = z.object({
 export type UserUpdate = z.infer<typeof userUpdateSchema>;
 
 /**
+ * Opening Hours Validations (needed before Restaurant schema)
+ */
+export const openingHourSchema = z.object({
+  dayOfWeek: z.number().min(0).max(6),
+  openTime: z.string().regex(/^([01]\d|2[0-3]):?([0-5]\d)$/, "Formato de hora inválido (HH:mm)").optional(),
+  closeTime: z.string().regex(/^([01]\d|2[0-3]):?([0-5]\d)$/, "Formato de hora inválido (HH:mm)").optional(),
+  isClosed: z.boolean().default(false),
+});
+
+export type OpeningHourInput = z.infer<typeof openingHourSchema>;
+
+/**
  * Restaurant Validations
  */
 export const restaurantCreateSchema = z.object({
@@ -87,15 +99,3 @@ export const billingDetailsSchema = z.object({
 });
 
 export type BillingDetails = z.infer<typeof billingDetailsSchema>;
-
-/**
- * Opening Hours Validations
- */
-export const openingHourSchema = z.object({
-  dayOfWeek: z.number().min(0).max(6),
-  openTime: z.string().regex(/^([01]\d|2[0-3]):?([0-5]\d)$/, "Formato de hora inválido (HH:mm)").optional(),
-  closeTime: z.string().regex(/^([01]\d|2[0-3]):?([0-5]\d)$/, "Formato de hora inválido (HH:mm)").optional(),
-  isClosed: z.boolean().default(false),
-});
-
-export type OpeningHourInput = z.infer<typeof openingHourSchema>;
