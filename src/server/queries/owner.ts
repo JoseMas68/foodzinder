@@ -160,23 +160,27 @@ export async function canUserEditRestaurant(userId: string, restaurantId: string
 /**
  * Get cached restaurants by owner ID
  */
-export const getCachedRestaurantsByOwnerId = unstable_cache(
-  async (ownerId: string) => getRestaurantsByOwnerId(ownerId),
-  ['owner-restaurants'],
-  {
-    revalidate: 60, // Cache for 1 minute
-    tags: [`owner-${ownerId}-restaurants`],
-  }
-)
+export function getCachedRestaurantsByOwnerId(ownerId: string) {
+  return unstable_cache(
+    async () => getRestaurantsByOwnerId(ownerId),
+    ['owner-restaurants', ownerId],
+    {
+      revalidate: 60, // Cache for 1 minute
+      tags: [`owner-${ownerId}-restaurants`],
+    }
+  )()
+}
 
 /**
  * Get cached owner stats
  */
-export const getCachedOwnerStats = unstable_cache(
-  async (ownerId: string) => getOwnerRestaurantStats(ownerId),
-  ['owner-stats'],
-  {
-    revalidate: 300, // Cache for 5 minutes
-    tags: [`owner-${ownerId}-stats`],
-  }
-)
+export function getCachedOwnerStats(ownerId: string) {
+  return unstable_cache(
+    async () => getOwnerRestaurantStats(ownerId),
+    ['owner-stats', ownerId],
+    {
+      revalidate: 300, // Cache for 5 minutes
+      tags: [`owner-${ownerId}-stats`],
+    }
+  )()
+}
