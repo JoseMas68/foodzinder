@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { restaurantCreateSchema, restaurantUpdateSchema } from "@/lib/validations";
 import { generateSlug } from "@/lib/utils";
-import { getCurrentUser } from "./auth";
+import { getCurrentUser } from "@/lib/auth/roles";
 import { syncRestaurantToMeilisearch } from "@/lib/search-sync";
 
 /**
@@ -13,8 +13,8 @@ import { syncRestaurantToMeilisearch } from "@/lib/search-sync";
  */
 export async function createRestaurant(formData: any) {
   try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("No autorizado");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("No autorizado");
 
     // Validar datos
     const validated = restaurantCreateSchema.parse(formData);
@@ -32,7 +32,7 @@ export async function createRestaurant(formData: any) {
       data: {
         ...validated,
         slug,
-        ownerId: userId,
+        ownerId: user.id,
         status: "PENDING", // Siempre empieza en pendiente
       },
     });
@@ -52,15 +52,20 @@ export async function createRestaurant(formData: any) {
  */
 export async function updateRestaurant(id: string, formData: any) {
   try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("No autorizado");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("No autorizado");
 
     // Verificar propiedad
     const existingRestaurant = await prisma.restaurant.findUnique({
       where: { id },
     });
 
-    if (!existingRestaurant || existingRestaurant.ownerId !== userId) {
+    if (!existingRestaurant) {
+      throw new Error("Restaurante no encontrado");
+    }
+
+    // Owners solo pueden editar sus restaurantes, Admins pueden editar cualquiera
+    if (user.role !== 'ADMIN' && existingRestaurant.ownerId !== user.id) {
       throw new Error("No tienes permiso para editar este restaurante");
     }
 
@@ -100,11 +105,16 @@ export async function updateRestaurant(id: string, formData: any) {
  */
 export async function archiveRestaurant(id: string) {
   try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("No autorizado");
+    const user = await getCurrentUser();
+    if (!user) throw new Error("No autorizado");
 
     const existing = await prisma.restaurant.findUnique({ where: { id } });
-    if (!existing || existing.ownerId !== userId) {
+    if (!existing) {
+      throw new Error("Restaurante no encontrado");
+    }
+
+    // Owners solo pueden archivar sus restaurantes, Admins pueden archivar cualquiera
+    if (user.role !== 'ADMIN' && existing.ownerId !== user.id) {
       throw new Error("No tienes permiso");
     }
 
