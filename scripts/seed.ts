@@ -26,6 +26,7 @@ async function main() {
   const admin = await prisma.user.create({
     data: {
       id: 'admin_001',
+      clerkId: 'clerk_admin_001',
       email: 'admin@foodzinder.com',
       firstName: 'Admin',
       lastName: 'Foodzinder',
@@ -36,6 +37,7 @@ async function main() {
   const owner1 = await prisma.user.create({
     data: {
       id: 'owner_001',
+      clerkId: 'clerk_owner_001',
       email: 'juan@restaurant.com',
       firstName: 'Juan',
       lastName: 'García',
@@ -46,6 +48,7 @@ async function main() {
   const owner2 = await prisma.user.create({
     data: {
       id: 'owner_002',
+      clerkId: 'clerk_owner_002',
       email: 'maria@restaurant.com',
       firstName: 'María',
       lastName: 'López',
@@ -56,6 +59,7 @@ async function main() {
   const user1 = await prisma.user.create({
     data: {
       id: 'user_001',
+      clerkId: 'clerk_user_001',
       email: 'carlos@example.com',
       firstName: 'Carlos',
       lastName: 'Martínez',
@@ -66,6 +70,7 @@ async function main() {
   const user2 = await prisma.user.create({
     data: {
       id: 'user_002',
+      clerkId: 'clerk_user_002',
       email: 'ana@example.com',
       firstName: 'Ana',
       lastName: 'Rodríguez',
