@@ -16,16 +16,14 @@ const RestaurantGridComponent = ({
 }: RestaurantGridProps) => {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
         {Array.from({ length: 6 }).map((_, index) => (
-          <div key={index} className="space-y-4">
-            <Skeleton className="w-full h-40" />
-
-            <div className="space-y-2 px-3">
-              <Skeleton className="h-4 w-3/4" />
-              <Skeleton className="h-3 w-1/2" />
-              <Skeleton className="h-3 w-full" />
-              <Skeleton className="h-3 w-5/6" />
+          <div key={index} className="space-y-4 bg-white p-4 rounded-[2.5rem] border border-gray-100">
+            <Skeleton className="w-full h-48 rounded-2xl" />
+            <div className="space-y-3 px-2">
+              <Skeleton className="h-6 w-3/4 rounded-md" />
+              <Skeleton className="h-4 w-1/2 rounded-md" />
+              <Skeleton className="h-4 w-full rounded-md" />
             </div>
           </div>
         ))}
@@ -35,13 +33,13 @@ const RestaurantGridComponent = ({
 
   if (restaurants.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-[300px]">
+      <div className="flex flex-col items-center justify-center min-h-[400px] bg-white rounded-[2.5rem] border border-dashed border-gray-200 p-12">
         <div className="text-center">
-          <p className="text-lg font-semibold text-gray-900 mb-2">
+          <p className="text-xl font-heading font-bold text-gray-900 mb-2">
             {emptyMessage}
           </p>
-          <p className="text-sm text-gray-600">
-            Try adjusting your filters or search query
+          <p className="text-sm text-gray-500 max-w-xs mx-auto">
+            Prueba a ajustar tus filtros o busca algo diferente para encontrar lo que buscas.
           </p>
         </div>
       </div>
@@ -49,7 +47,7 @@ const RestaurantGridComponent = ({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
       {restaurants.map((restaurant) => (
         <RestaurantCard
           key={restaurant.id}

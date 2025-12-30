@@ -21,6 +21,8 @@ export const restaurantCreateSchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   priceRange: z.enum(["CHEAP", "MODERATE", "EXPENSIVE", "LUXURY"]),
+  phone: z.string().optional(),
+  website: z.string().url("URL inválida").optional().or(z.literal("")),
 });
 
 export const restaurantUpdateSchema = restaurantCreateSchema.partial();
@@ -81,3 +83,15 @@ export const billingDetailsSchema = z.object({
 });
 
 export type BillingDetails = z.infer<typeof billingDetailsSchema>;
+
+/**
+ * Opening Hours Validations
+ */
+export const openingHourSchema = z.object({
+  dayOfWeek: z.number().min(0).max(6),
+  openTime: z.string().regex(/^([01]\d|2[0-3]):?([0-5]\d)$/, "Formato de hora inválido (HH:mm)").optional(),
+  closeTime: z.string().regex(/^([01]\d|2[0-3]):?([0-5]\d)$/, "Formato de hora inválido (HH:mm)").optional(),
+  isClosed: z.boolean().default(false),
+});
+
+export type OpeningHourInput = z.infer<typeof openingHourSchema>;

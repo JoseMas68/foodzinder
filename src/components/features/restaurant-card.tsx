@@ -38,77 +38,74 @@ export function RestaurantCard({
 
   return (
     <Link href={`/restaurants/${restaurant.slug}`}>
-      <Card className="overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer group">
-        <div className="relative w-full h-40 bg-gray-200 overflow-hidden">
+      <Card className="overflow-hidden border-gray-100 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-500 cursor-pointer group rounded-3xl">
+        <div className="relative w-full h-48 bg-gray-50 overflow-hidden">
           {restaurant.coverUrl ? (
             <Image
               src={restaurant.coverUrl}
               alt={restaurant.name}
               fill
-              className="object-cover group-hover:scale-105 transition-transform duration-300"
+              className="object-cover group-hover:scale-110 transition-transform duration-700"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200" />
+            <div className="w-full h-full bg-gradient-to-br from-primary/5 to-primary/10" />
           )}
+          <div className="absolute top-3 right-3">
+            <Badge className="bg-white/90 backdrop-blur-md text-gray-900 border-none shadow-sm font-semibold">
+              {formatPriceRange(restaurant.priceRange)}
+            </Badge>
+          </div>
         </div>
 
-        <CardContent className="pt-4 pb-4">
-          <div className="flex gap-3 mb-3">
-            <Avatar className="w-12 h-12 flex-shrink-0">
+        <CardContent className="pt-5 pb-5 px-5">
+          <div className="flex items-start gap-4">
+            <Avatar className="w-12 h-12 ring-2 ring-white shadow-md flex-shrink-0">
               {restaurant.logoUrl && (
                 <AvatarImage
                   src={restaurant.logoUrl}
                   alt={restaurant.name}
                 />
               )}
-              <AvatarFallback className="bg-blue-100 text-blue-700">
+              <AvatarFallback className="bg-primary/10 text-primary font-bold">
                 {initials}
               </AvatarFallback>
             </Avatar>
 
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm font-bold text-gray-900 truncate leading-tight">
+              <h3 className="text-lg font-heading font-bold text-gray-900 truncate leading-tight group-hover:text-primary transition-colors">
                 {restaurant.name}
               </h3>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                {formatPriceRange(restaurant.priceRange)}
-              </p>
+
+              {stats && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <RatingWidget
+                    rating={stats.averageRating}
+                    size="sm"
+                    showValue={true}
+                  />
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                    ({stats.reviewCount})
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
-          <p className="text-xs text-gray-600 line-clamp-2 mb-3 leading-relaxed">
+          <p className="text-sm text-gray-500 line-clamp-2 mt-4 leading-relaxed font-medium">
             {restaurant.description}
           </p>
 
-          {stats && (
-            <div className="flex items-center gap-2 mb-3">
-              <RatingWidget
-                rating={stats.averageRating}
-                size="sm"
-                showValue={true}
-              />
-              <span className="text-xs text-gray-500">
-                ({stats.reviewCount} {stats.reviewCount === 1 ? "review" : "reviews"})
-              </span>
-            </div>
-          )}
-
           {taxonomies && taxonomies.length > 0 && (
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1.5 mt-4">
               {taxonomies.slice(0, 2).map((taxonomy, index) => (
                 <Badge
                   key={index}
                   variant="secondary"
-                  className="text-xs"
+                  className="bg-gray-50 text-gray-600 border-none text-[10px] font-bold uppercase tracking-tight py-0.5 px-2"
                 >
                   {taxonomy.name}
                 </Badge>
               ))}
-              {taxonomies.length > 2 && (
-                <Badge variant="secondary" className="text-xs">
-                  +{taxonomies.length - 2}
-                </Badge>
-              )}
             </div>
           )}
         </CardContent>

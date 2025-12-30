@@ -1,0 +1,158 @@
+"use server";
+
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { restaurantCreateSchema, restaurantUpdateSchema } from "@/lib/validations";
+import { generateSlug } from "@/lib/utils";
+import { getCurrentUser } from "./auth";
+import { syncRestaurantToMeilisearch } from "@/lib/search-sync";
+
+/**
+ * Crear un nuevo restaurante
+ */
+export async function createRestaurant(formData: any) {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("No autorizado");
+
+    // Validar datos
+    const validated = restaurantCreateSchema.parse(formData);
+
+    // Generar slug base
+    let slug = generateSlug(validated.name);
+
+    // Verificar si el slug existe y generar uno único si es necesario
+    const existing = await prisma.restaurant.findUnique({ where: { slug } });
+    if (existing) {
+      slug = `${slug}-${Math.random().toString(36).substring(2, 7)}`;
+    }
+
+    const restaurant = await prisma.restaurant.create({
+      data: {
+        ...validated,
+        slug,
+        ownerId: userId,
+        status: "PENDING", // Siempre empieza en pendiente
+      },
+    });
+
+    revalidatePath("/dashboard/restaurants");
+    revalidatePath("/");
+
+    return { success: true, data: restaurant };
+  } catch (error: any) {
+    console.error("Error creating restaurant:", error);
+    return { success: false, error: error.message || "Error al crear el restaurante" };
+  }
+}
+
+/**
+ * Actualizar un restaurante existente
+ */
+export async function updateRestaurant(id: string, formData: any) {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("No autorizado");
+
+    // Verificar propiedad
+    const existingRestaurant = await prisma.restaurant.findUnique({
+      where: { id },
+    });
+
+    if (!existingRestaurant || existingRestaurant.ownerId !== userId) {
+      throw new Error("No tienes permiso para editar este restaurante");
+    }
+
+    // Validar datos
+    const validated = restaurantUpdateSchema.parse(formData);
+
+    // Si el nombre cambia, ¿actualizamos el slug? 
+    // Generalmente es mejor no cambiar slugs para SEO, pero aquí permitimos cambios menores o manuales si fuera necesario.
+    // Por ahora, solo si el nombre cambia drásticamente y no es el mismo.
+    let updateData: any = { ...validated };
+
+    if (validated.name && validated.name !== existingRestaurant.name) {
+      // Opcional: actualizar slug si se desea
+      // updateData.slug = generateSlug(validated.name);
+    }
+
+    const restaurant = await prisma.restaurant.update({
+      where: { id },
+      data: updateData,
+    });
+
+    await syncRestaurantToMeilisearch(id);
+
+    revalidatePath(`/dashboard/restaurants/${id}`);
+    revalidatePath(`/restaurants/${restaurant.slug}`);
+    revalidatePath("/");
+
+    return { success: true, data: restaurant };
+  } catch (error: any) {
+    console.error("Error updating restaurant:", error);
+    return { success: false, error: error.message || "Error al actualizar el restaurante" };
+  }
+}
+
+/**
+ * Archivar un restaurante (Soft Delete)
+ */
+export async function archiveRestaurant(id: string) {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("No autorizado");
+
+    const existing = await prisma.restaurant.findUnique({ where: { id } });
+    if (!existing || existing.ownerId !== userId) {
+      throw new Error("No tienes permiso");
+    }
+
+    await prisma.restaurant.update({
+      where: { id },
+      data: { status: "ARCHIVED" },
+    });
+
+    await syncRestaurantToMeilisearch(id);
+
+    revalidatePath("/dashboard/restaurants");
+    revalidatePath("/");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error archiving restaurant:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Eliminar permanentemente un restaurante (Solo Owner o Admin)
+ */
+export async function deleteRestaurant(id: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) throw new Error("No autorizado");
+
+    const existing = await prisma.restaurant.findUnique({ where: { id } });
+    if (!existing) throw new Error("No encontrado");
+
+    // Solo el dueño o un admin pueden borrar permanentemente
+    if (existing.ownerId !== user.id && user.role !== "ADMIN") {
+      throw new Error("No tienes permiso");
+    }
+
+    await prisma.restaurant.delete({
+      where: { id },
+    });
+
+    await syncRestaurantToMeilisearch(id);
+
+    revalidatePath("/dashboard/restaurants");
+    revalidatePath("/");
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Error deleting restaurant:", error);
+    return { success: false, error: error.message };
+  }
+}

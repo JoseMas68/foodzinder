@@ -25,6 +25,7 @@ model User {
   taxId       String?
   billingName String?
   billingAddress String?
+  stripeCustomerId String? @unique
 
   // Relations
   restaurants   Restaurant[]
@@ -72,6 +73,8 @@ model Restaurant {
 
   // Details
   priceRange PriceRange
+  phone      String?
+  website    String?
 
   // Relations
   ownerId String
@@ -80,6 +83,7 @@ model Restaurant {
   menus          RestaurantMenu[]
   reviews        Review[]
   taxonomies     RestaurantTaxonomy[]
+  openingHours   OpeningHour[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -101,6 +105,20 @@ enum PriceRange {
   MODERATE
   EXPENSIVE
   LUXURY
+}
+
+model OpeningHour {
+  id           String     @id @default(uuid())
+  dayOfWeek    Int        // 0-6 (Sunday-Saturday)
+  openTime     String?    // Format "HH:mm"
+  closeTime    String?    // Format "HH:mm"
+  isClosed     Boolean    @default(false)
+
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+  @@unique([restaurantId, dayOfWeek])
 }
 
 // ============================================================================

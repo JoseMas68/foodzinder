@@ -50,6 +50,8 @@ export type Restaurant = {
   logoUrl?: string;
   coverUrl?: string;
   priceRange: PriceRange;
+  phone?: string;
+  website?: string;
   createdAt: Date;
   updatedAt: Date;
 };

@@ -1,7 +1,7 @@
 import {
   searchRestaurants,
   getTaxonomies,
-  getRestaurantStats,
+  getManyRestaurantStats,
 } from "@/server/queries/restaurants";
 import { FilterBar, RestaurantGrid, Pagination } from "@/components/features";
 import { SearchAutocomplete } from "@/components/features/search-autocomplete";
@@ -33,16 +33,14 @@ export default async function RestaurantsPage({ searchParams }: PageProps) {
     getTaxonomies("CUISINE_TYPE"),
   ]);
 
-  // Fetch stats for each restaurant
-  const restaurantsWithStats = await Promise.all(
-    restaurantsData.data.map(async (restaurant) => {
-      const stats = await getRestaurantStats(restaurant.id);
-      return {
-        ...restaurant,
-        stats,
-      };
-    })
-  );
+  // Fetch stats in bulk
+  const restaurantIds = restaurantsData.data.map((r) => r.id);
+  const statsMap = await getManyRestaurantStats(restaurantIds);
+
+  const restaurantsWithStats = restaurantsData.data.map((restaurant) => ({
+    ...restaurant,
+    stats: statsMap[restaurant.id],
+  }));
 
   // Calcular total de páginas (12 items por página)
   const totalPages = Math.ceil(restaurantsData.total / 12);

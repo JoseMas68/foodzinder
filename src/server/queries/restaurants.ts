@@ -44,6 +44,8 @@ export const getApprovedRestaurants = cache(
           logoUrl: r.logoUrl || undefined,
           coverUrl: r.coverUrl || undefined,
           priceRange: r.priceRange as any,
+          phone: r.phone || undefined,
+          website: r.website || undefined,
           createdAt: r.createdAt,
           updatedAt: r.updatedAt,
         })),
@@ -92,6 +94,8 @@ export const getRestaurantBySlug = cache(
         logoUrl: restaurant.logoUrl || undefined,
         coverUrl: restaurant.coverUrl || undefined,
         priceRange: restaurant.priceRange as any,
+        phone: restaurant.phone || undefined,
+        website: restaurant.website || undefined,
         createdAt: restaurant.createdAt,
         updatedAt: restaurant.updatedAt,
       };
@@ -127,12 +131,55 @@ export async function getMyRestaurants(
       logoUrl: r.logoUrl || undefined,
       coverUrl: r.coverUrl || undefined,
       priceRange: r.priceRange as any,
+      phone: r.phone || undefined,
+      website: r.website || undefined,
       createdAt: r.createdAt,
       updatedAt: r.updatedAt,
     }));
   } catch (error) {
     console.error("Error fetching user restaurants:", error);
     return [];
+  }
+}
+
+/**
+ * Obtener estadísticas de múltiples restaurantes en una sola consulta (Evita N+1)
+ */
+export async function getManyRestaurantStats(restaurantIds: string[]) {
+  try {
+    const reviews = await prisma.review.findMany({
+      where: { restaurantId: { in: restaurantIds } },
+      select: { restaurantId: true, rating: true },
+    });
+
+    // Agrupar por restaurante
+    const statsMap: Record<string, { reviewCount: number; averageRating: number; totalReviews: number[] }> = {};
+
+    restaurantIds.forEach(id => {
+      statsMap[id] = { reviewCount: 0, averageRating: 0, totalReviews: [] };
+    });
+
+    reviews.forEach(review => {
+      const stats = statsMap[review.restaurantId];
+      if (stats) {
+        stats.reviewCount++;
+        stats.totalReviews.push(review.rating);
+      }
+    });
+
+    // Calcular promedios
+    Object.keys(statsMap).forEach(id => {
+      const stats = statsMap[id];
+      if (stats.reviewCount > 0) {
+        const sum = stats.totalReviews.reduce((a, b) => a + b, 0);
+        stats.averageRating = Math.round((sum / stats.reviewCount) * 10) / 10;
+      }
+    });
+
+    return statsMap;
+  } catch (error) {
+    console.error("Error fetching many restaurant stats:", error);
+    return {};
   }
 }
 
@@ -348,6 +395,70 @@ export const getRestaurantReviews = cache(
       };
     } catch (error) {
       console.error("Error fetching restaurant reviews:", error);
+      return {
+        data: [],
+        total: 0,
+        page,
+        limit,
+        pages: 0,
+      };
+    }
+  }
+);
+
+/**
+ * Obtener todos los restaurantes pendientes (solo para admins)
+ */
+export const getPendingRestaurants = cache(
+  async (
+    page: number = 1,
+    limit: number = 20
+  ): Promise<PaginatedResponse<Restaurant>> => {
+    try {
+      const skip = (page - 1) * limit;
+
+      const [restaurants, total] = await Promise.all([
+        prisma.restaurant.findMany({
+          where: { status: "PENDING" },
+          include: { owner: true },
+          take: limit,
+          skip,
+          orderBy: { createdAt: "desc" },
+        }),
+        prisma.restaurant.count({
+          where: { status: "PENDING" },
+        }),
+      ]);
+
+      const pages = Math.ceil(total / limit);
+
+      return {
+        data: restaurants.map((r) => ({
+          id: r.id,
+          ownerId: r.ownerId,
+          name: r.name,
+          slug: r.slug,
+          description: r.description,
+          address: r.address,
+          latitude: r.latitude || undefined,
+          longitude: r.longitude || undefined,
+          status: r.status as any,
+          logoUrl: r.logoUrl || undefined,
+          coverUrl: r.coverUrl || undefined,
+          priceRange: r.priceRange as any,
+          phone: r.phone || undefined,
+          website: r.website || undefined,
+          createdAt: r.createdAt,
+          updatedAt: r.updatedAt,
+          owner: r.owner, // Incluir info del propietario para el admin
+        })),
+        total,
+        page,
+        limit,
+        pages,
+      };
+    } catch (error) {
+      console.error("Error fetching pending restaurants:", error);
       return {
         data: [],
         total: 0,

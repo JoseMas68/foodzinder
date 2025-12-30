@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Outfit } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "@/styles/globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
-const geist = Geist({
+const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-mono",
+const outfit = Outfit({
+  variable: "--font-heading",
   subsets: ["latin"],
 });
 
@@ -41,7 +41,7 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="es" suppressHydrationWarning>
         <body
-          className={`${geist.variable} ${geistMono.variable} antialiased`}
+          className={`${inter.variable} ${outfit.variable} font-sans antialiased`}
           suppressHydrationWarning
         >
           {children}

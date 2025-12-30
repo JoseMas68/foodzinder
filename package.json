@@ -16,7 +16,7 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
-    "@clerk/nextjs": "^5.5.0",
+    "@clerk/nextjs": "^6.36.5",
     "@hookform/resolvers": "^3.3.4",
     "@prisma/client": "^5.0.0",
     "@radix-ui/react-avatar": "^1.1.11",
@@ -39,6 +39,7 @@
     "framer-motion": "^10.16.16",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.344.0",
+    "meilisearch": "^0.54.0",
     "next": "^15.0.0",
     "next-themes": "^0.2.1",
     "postcss": "^8.4.32",

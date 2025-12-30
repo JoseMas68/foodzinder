@@ -51,7 +51,7 @@ export function FilterBar({ taxonomies = [] }: FilterBarProps) {
       params.delete("minRating");
     }
 
-    router.push(`/restaurants?${params.toString()}`);
+    router.push(`?${params.toString()}`);
   };
 
   // Update URL whenever filters change
