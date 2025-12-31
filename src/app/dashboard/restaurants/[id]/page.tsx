@@ -184,7 +184,7 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
       {/* Menus Section */}
       <RestaurantMenus
         restaurantId={id}
-        availableMenus={await prisma.menu.findMany({
+        availableMenus={(await prisma.menu.findMany({
           where: { ownerId: user.id },
           select: {
             id: true,
@@ -194,8 +194,11 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
             isActive: true,
           },
           orderBy: { title: 'asc' },
-        })}
-        assignedMenus={await prisma.restaurantMenu.findMany({
+        })).map(m => ({
+          ...m,
+          price: m.price ? Number(m.price) : null,
+        }))}
+        assignedMenus={(await prisma.restaurantMenu.findMany({
           where: { restaurantId: id },
           include: {
             menu: {
@@ -208,10 +211,11 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
               },
             },
           },
-        }).then(menus => menus.map(m => ({
+        })).map(m => ({
           ...m.menu,
+          price: m.menu.price ? Number(m.menu.price) : null,
           assignedAt: m.assignedAt,
-        })))}
+        }))}
       />
     </div>
   )

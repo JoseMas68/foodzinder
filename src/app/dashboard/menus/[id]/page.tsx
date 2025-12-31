@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
 import { MenuForm } from "@/components/dashboard/menus/menu-form";
 import { DishList } from "@/components/dashboard/menus/dish-list";
+import { MenuRestaurants } from "@/components/dashboard/menus/menu-restaurants";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
@@ -81,6 +82,39 @@ export default async function MenuDetailPage({
           <DishList menuId={menu.id} dishes={menu.dishes} />
         </CardContent>
       </Card>
+
+      <Separator className="my-8" />
+
+      {/* Restaurants Section */}
+      <MenuRestaurants
+        menuId={menu.id}
+        availableRestaurants={await prisma.restaurant.findMany({
+          where: { ownerId: user.id },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            status: true,
+          },
+          orderBy: { name: 'asc' },
+        })}
+        assignedRestaurants={(await prisma.restaurantMenu.findMany({
+          where: { menuId: id },
+          include: {
+            restaurant: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                status: true,
+              },
+            },
+          },
+        })).map(rm => ({
+          ...rm.restaurant,
+          assignedAt: rm.assignedAt,
+        }))}
+      />
     </div>
   );
 }

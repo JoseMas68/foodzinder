@@ -108,7 +108,6 @@ export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisi
                       value={field.value}
                       onChange={field.onChange}
                       onRemove={() => field.onChange('')}
-                      endpoint="restaurantLogo"
                     />
                   </FormControl>
                   <FormDescription>
@@ -130,7 +129,6 @@ export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisi
                       value={field.value}
                       onChange={field.onChange}
                       onRemove={() => field.onChange('')}
-                      endpoint="restaurantCover"
                     />
                   </FormControl>
                   <FormDescription>

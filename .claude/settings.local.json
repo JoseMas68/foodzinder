@@ -15,7 +15,12 @@
       "Bash(curl:*)",
       "Bash(taskkill /F /PID 18428)",
       "Bash(taskkill:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(cat:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(npx tsc:*)",
+      "Bash(timeout /t 2 /nobreak)",
+      "Bash(timeout /t 10 /nobreak)"
     ]
   }
 }

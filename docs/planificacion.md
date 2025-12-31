@@ -49,8 +49,10 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
 - [x] Selección de tipos de cocina (taxonomías).
 - [x] Subida de imágenes (Logo y Cover) con Cloudinary.
 - [x] Vista pública de restaurante individual.
+- [x] **Gestión de Menús y Platos (CRUD completo)**.
+- [x] **Asociación bidireccional menú ↔ restaurante**.
+- [x] **Vista pública de menús en página de restaurante**.
 - [ ] Flujo de Aprobación por Admin.
-- [ ] Gestión de Menús y Platos.
 
 ### Sprint 2: Experiencia de Usuario (Consumidores) 🔄 EN PROGRESO
 
@@ -65,7 +67,8 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
 **Pendiente:**
 - [ ] Buscador avanzado con Meilisearch.
 - [ ] Filtros por ubicación/distancia.
-- [ ] Vista de Menú y Platos.
+- [ ] Sistema de Reseñas (Crear, Listar, Editar propias).
+- [ ] Sistema de Favoritos.
 
 ### Sprint 3: Suscripciones y Pagos (PENDIENTE)
 
