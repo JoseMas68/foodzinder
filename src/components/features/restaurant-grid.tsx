@@ -5,12 +5,14 @@ import { Restaurant } from "@/types";
 
 interface RestaurantGridProps {
   restaurants: Restaurant[];
+  isAuthenticated?: boolean;
   isLoading?: boolean;
   emptyMessage?: string;
 }
 
 const RestaurantGridComponent = ({
   restaurants,
+  isAuthenticated = false,
   isLoading = false,
   emptyMessage = "No restaurants found",
 }: RestaurantGridProps) => {
@@ -52,6 +54,7 @@ const RestaurantGridComponent = ({
         <RestaurantCard
           key={restaurant.id}
           restaurant={restaurant}
+          isAuthenticated={isAuthenticated}
         />
       ))}
     </div>

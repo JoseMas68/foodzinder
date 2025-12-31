@@ -89,7 +89,7 @@ export function FavoriteButton({
             e.stopPropagation();
           }}
         >
-          <Heart className="h-4 w-4" />
+          <Heart className="h-5 w-5 text-gray-700 stroke-2" />
           {variant !== "icon" && <span className="ml-2">Guardar</span>}
         </Button>
       </SignInButton>
@@ -102,15 +102,17 @@ export function FavoriteButton({
       size={size}
       className={cn(
         className,
-        isFavorite && "bg-red-50 hover:bg-red-100 border-red-200"
+        "transition-all duration-200"
       )}
       onClick={handleToggle}
       disabled={isLoading}
     >
       <Heart
         className={cn(
-          "h-4 w-4 transition-all",
-          isFavorite && "fill-red-500 text-red-500"
+          "h-5 w-5 transition-all duration-200 stroke-2",
+          isFavorite
+            ? "fill-red-500 text-red-500"
+            : "fill-transparent text-gray-700"
         )}
       />
       {variant !== "icon" && (

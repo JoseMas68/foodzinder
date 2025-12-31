@@ -20,7 +20,7 @@ const envSchema = z.object({
 
   // Meilisearch
   NEXT_PUBLIC_MEILISEARCH_HOST: z.string().url().optional(),
-  MEILISEARCH_API_KEY: z.string().optional(),
+  MEILISEARCH_MASTER_KEY: z.string().optional(),
 
   // Redis
   REDIS_URL: z.string().optional(),
@@ -56,7 +56,7 @@ export function getEnv(): Env {
     NEXT_PUBLIC_BUNNY_CDN_URL: process.env.NEXT_PUBLIC_BUNNY_CDN_URL,
     BUNNY_API_KEY: process.env.BUNNY_API_KEY,
     NEXT_PUBLIC_MEILISEARCH_HOST: process.env.NEXT_PUBLIC_MEILISEARCH_HOST,
-    MEILISEARCH_API_KEY: process.env.MEILISEARCH_API_KEY,
+    MEILISEARCH_MASTER_KEY: process.env.MEILISEARCH_MASTER_KEY,
     REDIS_URL: process.env.REDIS_URL,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,

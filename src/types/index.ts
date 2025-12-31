@@ -52,6 +52,7 @@ export type Restaurant = {
   priceRange: PriceRange;
   phone?: string;
   website?: string;
+  isFavorite?: boolean;
   createdAt: Date;
   updatedAt: Date;
 };

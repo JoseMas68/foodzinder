@@ -350,6 +350,40 @@ model Favorite {
 }
 
 // ============================================================================
+// Page Builder (CMS)
+// ============================================================================
+
+model PageSection {
+  id String @id @default(uuid())
+
+  // Section configuration
+  type     SectionType
+  title    String?
+  subtitle String?
+  order    Int         @default(0)
+  isActive Boolean     @default(true)
+
+  // Configuration as JSON
+  config Json // Stores filters, limits, styling, etc.
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([order])
+  @@index([isActive])
+}
+
+enum SectionType {
+  HERO
+  CAROUSEL
+  CTA
+  FEATURED_GRID
+  CATEGORY_BANNER
+  CUSTOM_HTML
+}
+
+// ============================================================================
 // Audit Log (Optional)
 // ============================================================================
 

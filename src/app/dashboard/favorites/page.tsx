@@ -72,7 +72,7 @@ export default async function FavoritesPage() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
               {favorites.map(({ restaurant, createdAt }) => {
                 const averageRating = restaurant.reviews.length > 0
                   ? restaurant.reviews.reduce((acc, r) => acc + r.rating, 0) / restaurant.reviews.length

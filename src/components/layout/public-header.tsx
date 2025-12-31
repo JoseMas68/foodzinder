@@ -1,24 +1,54 @@
+"use client";
+
 import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
+import { Search } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export function PublicHeader() {
+  const pathname = usePathname();
+  const isOnHomePage = pathname === "/";
+  const isOnRestaurantsPage = pathname === "/restaurants";
+
   return (
     <header className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3">
         <nav className="flex items-center justify-between">
+          {/* Logo - Left */}
           <Logo />
 
-          <div className="hidden md:flex items-center gap-6">
-            <Link
-              href="/restaurants"
-              className="text-sm font-medium text-gray-600 hover:text-primary transition-colors"
-            >
-              Explorar
+          {/* Navigation - Center */}
+          <div className="hidden md:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+            <Link href="/">
+              <Button
+                variant="ghost"
+                className={`font-semibold transition-colors ${
+                  isOnHomePage
+                    ? "text-primary bg-primary/5 hover:bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Inicio
+              </Button>
             </Link>
+            <Link href="/restaurants">
+              <Button
+                variant="ghost"
+                className={`font-semibold transition-colors ${
+                  isOnRestaurantsPage
+                    ? "text-primary bg-primary/5 hover:bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Buscar Restaurante
+              </Button>
+            </Link>
+          </div>
 
-            {/* Auth Buttons */}
+          {/* Auth - Right */}
+          <div className="hidden md:flex items-center gap-3">
             <SignedOut>
               <SignInButton mode="modal">
                 <Button variant="ghost" size="sm" className="font-medium">
@@ -26,7 +56,7 @@ export function PublicHeader() {
                 </Button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <Button size="sm" className="font-semibold shadow-sm shadow-primary/20 transition-all hover:scale-105 active:scale-95">
+                <Button size="sm" className="font-semibold">
                   Registrarse
                 </Button>
               </SignUpButton>
@@ -34,13 +64,13 @@ export function PublicHeader() {
             <SignedIn>
               <Link href="/dashboard">
                 <Button variant="ghost" size="sm" className="font-medium">
-                  Mi Dashboard
+                  Dashboard
                 </Button>
               </Link>
               <UserButton
                 appearance={{
                   elements: {
-                    avatarBox: "w-10 h-10 shadow-sm",
+                    avatarBox: "w-9 h-9",
                   },
                 }}
               />
@@ -48,24 +78,18 @@ export function PublicHeader() {
           </div>
 
           {/* Mobile nav */}
-          <div className="flex md:hidden items-center gap-3">
-            <Link
-              href="/restaurants"
-              className="text-sm font-medium text-gray-600 hover:text-primary"
-            >
-              Explorar
-            </Link>
+          <div className="flex md:hidden items-center gap-2">
             <SignedOut>
               <SignInButton mode="modal">
-                <Button variant="ghost" size="sm">
-                  Iniciar Sesión
+                <Button variant="ghost" size="sm" className="text-xs">
+                  Entrar
                 </Button>
               </SignInButton>
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard">
-                <Button variant="ghost" size="sm">
-                  Dashboard
+                <Button variant="ghost" size="sm" className="text-xs">
+                  Panel
                 </Button>
               </Link>
               <UserButton />

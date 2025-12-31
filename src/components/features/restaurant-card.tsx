@@ -6,6 +6,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { RatingWidget } from "./rating-widget";
 import { formatPriceRange } from "@/lib/format";
 import { PriceRange } from "@/types";
+import { FavoriteButton } from "@/components/favorites/favorite-button";
+import { MapPin } from "lucide-react";
 
 interface RestaurantCardProps {
   restaurant: {
@@ -16,18 +18,22 @@ interface RestaurantCardProps {
     logoUrl?: string;
     coverUrl?: string;
     priceRange: PriceRange;
+    isFavorite?: boolean;
+    distance?: number;
   };
   stats?: {
     averageRating: number;
     reviewCount: number;
   };
   taxonomies?: Array<{ name: string }>;
+  isAuthenticated?: boolean;
 }
 
 export function RestaurantCard({
   restaurant,
   stats,
   taxonomies,
+  isAuthenticated = false,
 }: RestaurantCardProps) {
   const initials = restaurant.name
     .split(" ")
@@ -37,9 +43,21 @@ export function RestaurantCard({
     .slice(0, 2);
 
   return (
-    <Link href={`/restaurants/${restaurant.slug}`}>
-      <Card className="overflow-hidden border-gray-100 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-500 cursor-pointer group rounded-3xl">
-        <div className="relative w-full h-48 bg-gray-50 overflow-hidden">
+    <Card className="border-gray-100 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-500 group rounded-3xl relative">
+      {/* Favorite button - positioned absolutely so it's outside the Link */}
+      <div className="absolute top-3 left-3 z-20">
+        <FavoriteButton
+          restaurantId={restaurant.id}
+          initialIsFavorite={restaurant.isFavorite || false}
+          isAuthenticated={isAuthenticated}
+          variant="icon"
+          size="icon"
+          className="bg-white/95 backdrop-blur-sm hover:bg-white shadow-lg border-0 hover:scale-110"
+        />
+      </div>
+
+      <Link href={`/restaurants/${restaurant.slug}`} className="block">
+        <div className="relative w-full h-48 bg-gray-50 overflow-hidden rounded-t-3xl">
           {restaurant.coverUrl ? (
             <Image
               src={restaurant.coverUrl}
@@ -50,10 +68,16 @@ export function RestaurantCard({
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary/5 to-primary/10" />
           )}
-          <div className="absolute top-3 right-3">
+          <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
             <Badge className="bg-white/90 backdrop-blur-md text-gray-900 border-none shadow-sm font-semibold">
               {formatPriceRange(restaurant.priceRange)}
             </Badge>
+            {restaurant.distance !== undefined && restaurant.distance < 999999 && (
+              <Badge className="bg-primary/90 backdrop-blur-md text-white border-none shadow-sm font-semibold flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {restaurant.distance} km
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -109,7 +133,7 @@ export function RestaurantCard({
             </div>
           )}
         </CardContent>
-      </Card>
-    </Link>
+      </Link>
+    </Card>
   );
 }

@@ -2,6 +2,7 @@ export { SearchInput } from "./search-input";
 export { SearchAutocomplete } from "./search-autocomplete";
 export { RestaurantCard } from "./restaurant-card";
 export { FilterBar } from "./filter-bar";
+export { SortSelect } from "./sort-select";
 export { RestaurantGrid } from "./restaurant-grid";
 export { RestaurantGridSkeleton } from "./restaurant-grid-skeleton";
 export { RatingWidget } from "./rating-widget";

@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, X, UtensilsCrossed, Utensils, Tag } from "lucide-react";
+import { Search, X, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getAutocomplete } from "@/server/queries/autocomplete";
 
 interface SearchAutocompleteProps {
   placeholder?: string;
@@ -26,7 +27,7 @@ export function SearchAutocomplete({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Fetch suggestions
+  // Fetch suggestions from Meilisearch
   useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -35,11 +36,18 @@ export function SearchAutocomplete({
     if (query.length >= 2) {
       setLoading(true);
       debounceRef.current = setTimeout(async () => {
-        const results = await getAutocomplete(query);
-        setSuggestions(results);
-        setShowDropdown(true);
-        setLoading(false);
-        setHighlightedIndex(-1);
+        try {
+          const response = await fetch(`/api/search/autocomplete?q=${encodeURIComponent(query)}&limit=5`);
+          const data = await response.json();
+          setSuggestions(data.suggestions || []);
+          setShowDropdown(true);
+          setLoading(false);
+          setHighlightedIndex(-1);
+        } catch (error) {
+          console.error('Autocomplete error:', error);
+          setSuggestions([]);
+          setLoading(false);
+        }
       }, 300);
     } else {
       setSuggestions(null);
@@ -69,19 +77,7 @@ export function SearchAutocomplete({
   const handleSelectRestaurant = (slug: string) => {
     router.push(`/restaurants/${slug}`);
     setShowDropdown(false);
-  };
-
-  const handleSelectDish = (slug: string) => {
-    router.push(`/restaurants/${slug}`);
-    setShowDropdown(false);
-  };
-
-  const handleSelectCuisine = (id: string) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("cuisineTypes", id);
-    params.delete("page"); // Reset to page 1
-    router.push(`/restaurants?${params.toString()}`);
-    setShowDropdown(false);
+    setQuery("");
   };
 
   const handleSearch = () => {
@@ -95,19 +91,18 @@ export function SearchAutocomplete({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!showDropdown || !suggestions) return;
-
-    const allItems = [
-      ...suggestions.restaurants.map((r: any) => ({ type: "restaurant", data: r })),
-      ...suggestions.dishes.map((d: any) => ({ type: "dish", data: d })),
-      ...suggestions.cuisines.map((c: any) => ({ type: "cuisine", data: c })),
-    ];
+    if (!showDropdown || !suggestions || suggestions.length === 0) {
+      if (e.key === "Enter") {
+        handleSearch();
+      }
+      return;
+    }
 
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
         setHighlightedIndex((prev) =>
-          prev < allItems.length - 1 ? prev + 1 : prev
+          prev < suggestions.length - 1 ? prev + 1 : prev
         );
         break;
       case "ArrowUp":
@@ -116,15 +111,8 @@ export function SearchAutocomplete({
         break;
       case "Enter":
         e.preventDefault();
-        if (highlightedIndex >= 0 && highlightedIndex < allItems.length) {
-          const item = allItems[highlightedIndex];
-          if (item.type === "restaurant") {
-            handleSelectRestaurant(item.data.slug);
-          } else if (item.type === "dish") {
-            handleSelectDish(item.data.restaurantSlug);
-          } else if (item.type === "cuisine") {
-            handleSelectCuisine(item.data.id);
-          }
+        if (highlightedIndex >= 0 && highlightedIndex < suggestions.length) {
+          handleSelectRestaurant(suggestions[highlightedIndex].slug);
         } else {
           handleSearch();
         }
@@ -141,11 +129,7 @@ export function SearchAutocomplete({
     setShowDropdown(false);
   };
 
-  const hasResults =
-    suggestions &&
-    (suggestions.restaurants.length > 0 ||
-      suggestions.dishes.length > 0 ||
-      suggestions.cuisines.length > 0);
+  const hasResults = suggestions && Array.isArray(suggestions) && suggestions.length > 0;
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
@@ -180,85 +164,65 @@ export function SearchAutocomplete({
           )}
 
           {hasResults && !loading && (
-            <>
-              {/* Restaurantes */}
-              {suggestions.restaurants.length > 0 && (
-                <div className="p-2 border-b last:border-b-0">
-                  <div className="text-xs font-semibold text-muted-foreground px-2 py-1">
-                    Restaurantes
-                  </div>
-                  {suggestions.restaurants.map((r: any, idx: number) => (
-                    <button
-                      key={r.id}
-                      onClick={() => handleSelectRestaurant(r.slug)}
-                      className={`w-full flex items-center gap-2 px-2 py-2 rounded text-sm transition-colors ${
-                        highlightedIndex === idx
-                          ? "bg-accent"
-                          : "hover:bg-accent"
-                      }`}
-                    >
-                      <UtensilsCrossed className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate">{r.name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
+            <div className="p-2">
+              {suggestions.map((restaurant: any, idx: number) => {
+                const initials = restaurant.name
+                  .split(" ")
+                  .map((word: string) => word[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2);
 
-              {/* Platos */}
-              {suggestions.dishes.length > 0 && (
-                <div className="p-2 border-b last:border-b-0">
-                  <div className="text-xs font-semibold text-muted-foreground px-2 py-1">
-                    Platos
-                  </div>
-                  {suggestions.dishes.map((d: any, idx: number) => (
-                    <button
-                      key={d.id}
-                      onClick={() => handleSelectDish(d.restaurantSlug)}
-                      className={`w-full flex items-center gap-2 px-2 py-2 rounded text-sm transition-colors ${
-                        highlightedIndex ===
-                        suggestions.restaurants.length + idx
-                          ? "bg-accent"
-                          : "hover:bg-accent"
-                      }`}
-                    >
-                      <Utensils className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <div className="flex flex-col items-start min-w-0">
-                        <span className="truncate">{d.name}</span>
-                        <span className="text-xs text-muted-foreground truncate">
-                          {d.restaurantName}
-                        </span>
+                return (
+                  <button
+                    key={restaurant.id}
+                    onClick={() => handleSelectRestaurant(restaurant.slug)}
+                    className={`w-full flex items-start gap-3 px-3 py-3 rounded-lg text-sm transition-colors ${
+                      highlightedIndex === idx
+                        ? "bg-accent"
+                        : "hover:bg-accent"
+                    }`}
+                  >
+                    <Avatar className="w-10 h-10 flex-shrink-0">
+                      {restaurant.logoUrl && (
+                        <AvatarImage
+                          src={restaurant.logoUrl}
+                          alt={restaurant.name}
+                        />
+                      )}
+                      <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
+                        {initials}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0 text-left">
+                      <div className="font-semibold truncate">{restaurant.name}</div>
+                      <div className="text-xs text-muted-foreground truncate mt-0.5">
+                        {restaurant.address}
                       </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-
-              {/* Tipos de cocina */}
-              {suggestions.cuisines.length > 0 && (
-                <div className="p-2">
-                  <div className="text-xs font-semibold text-muted-foreground px-2 py-1">
-                    Tipos de Cocina
-                  </div>
-                  {suggestions.cuisines.map((c: any, idx: number) => (
-                    <button
-                      key={c.id}
-                      onClick={() => handleSelectCuisine(c.id)}
-                      className={`w-full flex items-center gap-2 px-2 py-2 rounded text-sm transition-colors ${
-                        highlightedIndex ===
-                        suggestions.restaurants.length +
-                          suggestions.dishes.length +
-                          idx
-                          ? "bg-accent"
-                          : "hover:bg-accent"
-                      }`}
-                    >
-                      <Tag className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <span className="truncate">{c.name}</span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
+                      <div className="flex items-center gap-2 mt-1">
+                        {restaurant.averageRating > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                            <span className="text-xs font-medium">
+                              {restaurant.averageRating.toFixed(1)}
+                            </span>
+                          </div>
+                        )}
+                        {restaurant.cuisineTypes && restaurant.cuisineTypes.length > 0 && (
+                          <div className="flex gap-1">
+                            {restaurant.cuisineTypes.map((cuisine: string) => (
+                              <Badge key={cuisine} variant="secondary" className="text-[10px] py-0 px-1.5">
+                                {cuisine}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           )}
 
           {!loading && !hasResults && query.length >= 2 && (
