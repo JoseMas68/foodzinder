@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Building2, Home, PlusCircle, Settings } from 'lucide-react'
+import { Building2, Home, PlusCircle, Settings, UtensilsCrossed } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 
 const navigation = [
@@ -16,6 +16,11 @@ const navigation = [
     name: 'Mis Restaurantes',
     href: '/dashboard/restaurants',
     icon: Building2,
+  },
+  {
+    name: 'Menús',
+    href: '/dashboard/menus',
+    icon: UtensilsCrossed,
   },
   {
     name: 'Nuevo Restaurante',

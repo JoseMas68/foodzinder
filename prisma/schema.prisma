@@ -15,17 +15,17 @@ datasource db {
 // ============================================================================
 
 model User {
-  id       String   @id @default(cuid())
-  clerkId  String   @unique
-  email    String   @unique
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
   firstName String
   lastName  String
-  role     UserRole @default(USER)
+  role      UserRole @default(USER)
 
   // Billing Information
-  taxId       String?
-  billingName String?
-  billingAddress String?
+  taxId            String?
+  billingName      String?
+  billingAddress   String?
   stripeCustomerId String? @unique
 
   // Relations
@@ -53,11 +53,11 @@ enum UserRole {
 // ============================================================================
 
 model Restaurant {
-  id    String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // Basic Info
-  name  String
-  slug  String   @unique
+  name        String
+  slug        String @unique
   description String
 
   // Location
@@ -79,12 +79,12 @@ model Restaurant {
 
   // Relations
   ownerId String
-  owner   User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  menus          RestaurantMenu[]
-  reviews        Review[]
-  taxonomies     RestaurantTaxonomy[]
-  openingHours   OpeningHour[]
+  menus        RestaurantMenu[]
+  reviews      Review[]
+  taxonomies   RestaurantTaxonomy[]
+  openingHours OpeningHour[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -109,17 +109,17 @@ enum PriceRange {
 }
 
 model OpeningHour {
-  id           String     @id @default(uuid())
-  dayOfWeek    Int        // 0-6 (Sunday-Saturday)
-  openTime     String?    // Format "HH:mm"
-  closeTime    String?    // Format "HH:mm"
-  isClosed     Boolean    @default(false)
+  id        String  @id @default(uuid())
+  dayOfWeek Int // 0-6 (Sunday-Saturday)
+  openTime  String? // Format "HH:mm"
+  closeTime String? // Format "HH:mm"
+  isClosed  Boolean @default(false)
 
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
-  @@index([restaurantId])
   @@unique([restaurantId, dayOfWeek])
+  @@index([restaurantId])
 }
 
 // ============================================================================
@@ -127,7 +127,7 @@ model OpeningHour {
 // ============================================================================
 
 model Menu {
-  id    String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // Basic Info
   title       String
@@ -167,12 +167,12 @@ model RestaurantMenu {
 // ============================================================================
 
 model Dish {
-  id    String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // Basic Info
   name        String
   description String?
-  price       Decimal      @db.Decimal(10, 2)
+  price       Decimal @db.Decimal(10, 2)
   imageUrl    String?
 
   // Allergens
@@ -197,7 +197,7 @@ model Dish {
 // ============================================================================
 
 model Taxonomy {
-  id   String   @id @default(uuid())
+  id   String       @id @default(uuid())
   type TaxonomyType
   name String
   slug String
@@ -234,7 +234,7 @@ model RestaurantTaxonomy {
 // ============================================================================
 
 model Review {
-  id    String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // Rating & Comment
   rating  Int      @db.SmallInt
@@ -262,7 +262,7 @@ model Review {
 // ============================================================================
 
 model Subscription {
-  id    String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // Dates
   startDate DateTime
@@ -270,8 +270,8 @@ model Subscription {
   status    SubscriptionStatus
 
   // Stripe Info
-  planId  String
-  amount  Decimal @db.Decimal(10, 2)
+  planId   String
+  amount   Decimal @db.Decimal(10, 2)
   currency String  @default("EUR")
 
   // Relations
@@ -295,16 +295,16 @@ enum SubscriptionStatus {
 }
 
 model Invoice {
-  id    String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // Invoice Details
-  number           String   @unique
-  amountSubtotal   Decimal  @db.Decimal(10, 2)
-  taxAmount        Decimal  @db.Decimal(10, 2)
-  taxRate          Decimal  @db.Decimal(5, 2)
-  total            Decimal  @db.Decimal(10, 2)
-  status           InvoiceStatus
-  pdfUrl           String?
+  number         String        @unique
+  amountSubtotal Decimal       @db.Decimal(10, 2)
+  taxAmount      Decimal       @db.Decimal(10, 2)
+  taxRate        Decimal       @db.Decimal(5, 2)
+  total          Decimal       @db.Decimal(10, 2)
+  status         InvoiceStatus
+  pdfUrl         String?
 
   // Relations
   subscriptionId String
@@ -332,7 +332,7 @@ enum InvoiceStatus {
 // ============================================================================
 
 model Favorite {
-  id    String   @id @default(uuid())
+  id String @id @default(uuid())
 
   // Relations
   userId       String
@@ -350,7 +350,7 @@ model Favorite {
 // ============================================================================
 
 model AuditLog {
-  id    String   @id @default(uuid())
+  id String @id @default(uuid())
 
   action   String
   entity   String
