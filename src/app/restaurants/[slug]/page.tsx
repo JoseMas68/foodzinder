@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { PublicHeader } from '@/components/layout/public-header'
 import { HomeFooter } from '@/components/home'
 import { RestaurantReviews } from '@/components/reviews/restaurant-reviews'
+import { FavoriteButton } from '@/components/favorites/favorite-button'
 import { auth } from '@clerk/nextjs/server'
 import Image from 'next/image'
 import {
@@ -129,6 +130,18 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
     isOwnReview: currentUser ? review.userId === currentUser.id : false,
   }))
 
+  // Check if restaurant is in user's favorites
+  const isFavorite = currentUser
+    ? await prisma.favorite.findUnique({
+        where: {
+          userId_restaurantId: {
+            userId: currentUser.id,
+            restaurantId: restaurant.id,
+          },
+        },
+      }).then(f => !!f)
+    : false
+
   const priceRange = priceRangeConfig[restaurant.priceRange]
 
   return (
@@ -165,9 +178,11 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
 
           {/* Botones de acción */}
           <div className="absolute top-6 right-6 flex gap-2">
-            <Button variant="secondary" size="icon">
-              <Heart className="h-4 w-4" />
-            </Button>
+            <FavoriteButton
+              restaurantId={restaurant.id}
+              initialIsFavorite={isFavorite}
+              isAuthenticated={!!userId}
+            />
             <Button variant="secondary" size="icon">
               <Share2 className="h-4 w-4" />
             </Button>

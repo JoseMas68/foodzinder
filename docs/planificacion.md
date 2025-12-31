@@ -73,10 +73,16 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
   - [x] Solo una reseña por usuario por restaurante
   - [x] Calificación con estrellas (1-5)
 
+- [x] Sistema de Favoritos completo:
+  - [x] Guardar/quitar restaurantes de favoritos
+  - [x] Botón de favorito en página de detalle
+  - [x] Dashboard de "Mis Favoritos"
+  - [x] Indicador visual (corazón relleno)
+  - [x] Sign-in prompt para no autenticados
+
 **Pendiente:**
 - [ ] Buscador avanzado con Meilisearch.
 - [ ] Filtros por ubicación/distancia.
-- [ ] Sistema de Favoritos.
 
 ### Sprint 3: Suscripciones y Pagos (PENDIENTE)
 
