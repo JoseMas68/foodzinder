@@ -64,10 +64,18 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
 - [x] Sistema de rating (promedio de reseñas).
 - [x] Mapa interactivo con OpenStreetMap/Leaflet.
 
+**Completado:**
+- [x] Sistema de Reseñas completo:
+  - [x] CRUD de reseñas (crear, editar, eliminar)
+  - [x] Vista en página pública de restaurante
+  - [x] Dashboard de "Mis Reseñas"
+  - [x] Validación con Zod
+  - [x] Solo una reseña por usuario por restaurante
+  - [x] Calificación con estrellas (1-5)
+
 **Pendiente:**
 - [ ] Buscador avanzado con Meilisearch.
 - [ ] Filtros por ubicación/distancia.
-- [ ] Sistema de Reseñas (Crear, Listar, Editar propias).
 - [ ] Sistema de Favoritos.
 
 ### Sprint 3: Suscripciones y Pagos (PENDIENTE)

@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { PublicHeader } from '@/components/layout/public-header'
 import { HomeFooter } from '@/components/home'
+import { RestaurantReviews } from '@/components/reviews/restaurant-reviews'
+import { auth } from '@clerk/nextjs/server'
 import Image from 'next/image'
 import {
   MapPin,
@@ -37,6 +39,13 @@ const priceRangeConfig = {
 
 export default async function RestaurantPage({ params }: RestaurantPageProps) {
   const { slug } = await params
+  const { userId } = await auth()
+
+  // Get current user if authenticated
+  const currentUser = userId ? await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { id: true }
+  }) : null
 
   // Obtener restaurante con todas sus relaciones
   const restaurant = await prisma.restaurant.findUnique({
@@ -67,8 +76,16 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
         },
       },
       reviews: {
-        select: {
-          rating: true,
+        include: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: 'desc',
         },
       },
       menus: {
@@ -100,6 +117,17 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
   const averageRating = restaurant.reviews.length > 0
     ? restaurant.reviews.reduce((acc, r) => acc + r.rating, 0) / restaurant.reviews.length
     : 0
+
+  // Check if current user has already reviewed
+  const hasUserReviewed = currentUser
+    ? restaurant.reviews.some(r => r.userId === currentUser.id)
+    : false
+
+  // Mark own reviews
+  const reviewsWithOwnership = restaurant.reviews.map(review => ({
+    ...review,
+    isOwnReview: currentUser ? review.userId === currentUser.id : false,
+  }))
 
   const priceRange = priceRangeConfig[restaurant.priceRange]
 
@@ -321,15 +349,15 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
                 </CardContent>
               </Card>
 
-              {/* Reviews Section - Placeholder */}
-              <Card>
-                <CardContent className="p-8">
-                  <h2 className="text-2xl font-bold mb-4">Reseñas</h2>
-                  <p className="text-gray-500 italic">
-                    El sistema de reseñas estará disponible próximamente.
-                  </p>
-                </CardContent>
-              </Card>
+              {/* Reviews Section */}
+              <RestaurantReviews
+                restaurantId={restaurant.id}
+                reviews={reviewsWithOwnership}
+                isAuthenticated={!!userId}
+                hasUserReviewed={hasUserReviewed}
+                averageRating={averageRating}
+                totalReviews={restaurant.reviews.length}
+              />
             </div>
 
             {/* Sidebar de Información */}
