@@ -32,6 +32,7 @@ model User {
   restaurants   Restaurant[]
   menus         Menu[]
   reviews       Review[]
+  favorites     Favorite[]
   subscriptions Subscription[]
   invoices      Invoice[]
 
@@ -85,6 +86,7 @@ model Restaurant {
   reviews      Review[]
   taxonomies   RestaurantTaxonomy[]
   openingHours OpeningHour[]
+  favorites    Favorite[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -336,7 +338,9 @@ model Favorite {
 
   // Relations
   userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
 
