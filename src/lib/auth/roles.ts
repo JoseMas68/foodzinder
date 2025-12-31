@@ -3,26 +3,54 @@
  * Provides helpers for checking user roles and permissions
  */
 
-import { auth } from '@clerk/nextjs/server'
+import { auth, currentUser } from '@clerk/nextjs/server'
 import { UserRole } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
+import { syncUserFromClerk } from '@/server/actions/auth'
+import { cache } from 'react'
 
 /**
  * Get current user from database with Clerk authentication
+ * Auto-syncs user from Clerk if not found in database
+ *
+ * PERFORMANCE: This function is cached per request using React.cache()
+ * to avoid multiple database queries in a single render
  */
-export async function getCurrentUser() {
+export const getCurrentUser = cache(async () => {
   const { userId } = await auth()
 
   if (!userId) {
     return null
   }
 
-  const user = await prisma.user.findUnique({
+  let user = await prisma.user.findUnique({
     where: { clerkId: userId },
   })
 
+  // Si el usuario no existe en BD, sincronizarlo desde Clerk
+  if (!user) {
+    const clerkUser = await currentUser()
+
+    if (clerkUser?.emailAddresses?.[0]) {
+      try {
+        user = await syncUserFromClerk(
+          clerkUser.id,
+          clerkUser.emailAddresses[0].emailAddress,
+          clerkUser.firstName || '',
+          clerkUser.lastName || ''
+        )
+      } catch (error) {
+        console.error('[getCurrentUser] Error syncing user:', error)
+        // If sync fails, try to fetch again (might have been created by another request)
+        user = await prisma.user.findUnique({
+          where: { clerkId: userId },
+        })
+      }
+    }
+  }
+
   return user
-}
+})
 
 /**
  * Require that user has a specific role or roles

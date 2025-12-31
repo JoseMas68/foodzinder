@@ -2,69 +2,84 @@
 
 Este documento describe las fases para el desarrollo de la aplicación web Foodzinder.
 
-## Fase 1: Definición y Estrategia (Estado Actual)
+## Fase 1: Definición y Estrategia ✅ COMPLETADA
 
 - [x] Definición de identidad visual y branding.
 - [x] Elección del stack tecnológico.
 - [x] Definición de roles y funcionalidades principales.
-- [ ] Creación de artefactos de arquitectura y modelo de datos.
+- [x] Creación de artefactos de arquitectura y modelo de datos.
 
-## Fase 2: Configuración del Entorno (Siguiente Paso)
+## Fase 2: Configuración del Entorno ✅ COMPLETADA
 
 - **Repositorio y CI/CD:**
-  - Configuración inicial de Git y GitHub.
-  - Setup de GitHub Actions para deploy en preview.
+  - [x] Configuración inicial de Git y GitHub.
+  - [ ] Setup de GitHub Actions para deploy en preview.
 - **Infraestructura Base:**
-  - Inicialización de Next.js 16 con Bun.
-  - Configuración de Tailwind CSS y shadcn/ui.
-  - Configuración de linter y formateo (ESLint, Prettier).
+  - [x] Inicialización de Next.js 15 con npm.
+  - [x] Configuración de Tailwind CSS y shadcn/ui.
+  - [x] Configuración de linter y formateo (ESLint, Prettier).
 - **Servicios Externos:**
-  - Setup de proyecto en Supabase (PostgreSQL).
-  - Configuración de Clerk (Auth).
-  - Configuración inicial de Stripe/PayPal (Sandbox).
-  - Setup de cuenta en Bunny.net (Media).
-  - Setup de Meilisearch (Docker/Cloud).
+  - [x] Setup de PostgreSQL v17 local.
+  - [x] Configuración de Clerk (Auth).
+  - [x] Configuración de Cloudinary (Media - reemplazo de Uploadthing).
+  - [ ] Configuración inicial de Stripe (Sandbox).
+  - [ ] Setup de Meilisearch (Docker/Cloud).
 
-## Fase 3: Core y Autenticación
+## Fase 3: Core y Autenticación ✅ COMPLETADA
 
 - **Base de Datos:**
-  - Implementación del esquema Prisma inicial.
-  - Migraciones iniciales.
+  - [x] Implementación del esquema Prisma completo.
+  - [x] Migraciones iniciales.
+  - [x] Seeds con datos de ejemplo (25 restaurantes).
 - **Autenticación:**
-  - Integración de Clerk Provider.
-  - Webhooks de Clerk para sincronizar tabla `Users` en DB.
-  - Roles y Permisos (Middleware de protección de rutas).
+  - [x] Integración de Clerk Provider.
+  - [x] Webhooks de Clerk para sincronizar tabla `Users` en DB.
+  - [x] Roles y Permisos (Middleware de protección de rutas).
 - **Layouts Principales:**
-  - Layout público (Landing, Buscador).
-  - Layout de Dashboard (Sidebar, Header autenticado).
+  - [x] Layout público (Landing, Buscador).
+  - [x] Layout de Dashboard (Sidebar, Header autenticado).
 
-## Fase 4: Desarrollo de Funcionalidades (Sprints)
+## Fase 4: Desarrollo de Funcionalidades (Sprints) 🔄 EN PROGRESO
 
-### Sprint 1: Gestión de Restaurantes (Owners y Admins)
+### Sprint 1: Gestión de Restaurantes (Owners y Admins) ✅ COMPLETADO
 
-- CRUD de Restaurantes (Crear, Editar, Listar propios).
-- Flujo de Aprobación por Admin.
-- Gestión de Menús y Platos.
-- Subida de imágenes a Bunny.net.
+- [x] CRUD de Restaurantes (Crear, Editar, Listar propios).
+- [x] Formulario con validación (Zod + React Hook Form).
+- [x] Gestión de horarios de apertura.
+- [x] Selección de tipos de cocina (taxonomías).
+- [x] Subida de imágenes (Logo y Cover) con Cloudinary.
+- [x] Vista pública de restaurante individual.
+- [ ] Flujo de Aprobación por Admin.
+- [ ] Gestión de Menús y Platos.
 
-### Sprint 2: Suscripciones y Pagos
+### Sprint 2: Experiencia de Usuario (Consumidores) 🔄 EN PROGRESO
 
-- Integración de Stripe/PayPal para planes de suscripción (Owners).
-- Lógica de acceso restringido según plan (si aplica).
-- Sistema de cupones.
+**Completado:**
+- [x] Home Page con listado de restaurantes.
+- [x] Filtros por tipo de cocina y rango de precios.
+- [x] Búsqueda básica de restaurantes.
+- [x] Vista de detalle de Restaurante.
+- [x] Sistema de rating (promedio de reseñas).
+- [x] Mapa interactivo con OpenStreetMap/Leaflet.
 
-### Sprint 3: Experiencia de Usuario (Consumidores)
+**Pendiente:**
+- [ ] Buscador avanzado con Meilisearch.
+- [ ] Filtros por ubicación/distancia.
+- [ ] Vista de Menú y Platos.
 
-- Home Page con destacados.
-- Buscador con Meilisearch (Filtros por taxonomías).
-- Integración de OpenStreetMap (Geolocalización).
-- Vista de detalle de Restaurante y Menú.
+### Sprint 3: Suscripciones y Pagos (PENDIENTE)
 
-### Sprint 4: Social y Gamificación
+- [ ] Integración de Stripe para planes de suscripción (Owners).
+- [ ] Lógica de acceso restringido según plan.
+- [ ] Sistema de cupones.
+- [ ] Panel de facturación.
 
-- Sistema de Reseñas (Texto + Fotos).
-- Sistema de Favoritos/Deseos (Lista lateral).
-- Lógica básica de Gamificación (Puntos).
+### Sprint 4: Social y Gamificación (PENDIENTE)
+
+- [ ] Sistema de Reseñas mejorado (Texto + Fotos).
+- [ ] Sistema de Favoritos/Deseos (Lista lateral).
+- [ ] Lógica básica de Gamificación (Puntos).
+- [ ] Perfil de usuario público.
 
 ## Fase 5: Optimización y Lanzamiento
 

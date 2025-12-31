@@ -1,6 +1,5 @@
 'use client'
 
-import { useUploadThing } from "@/lib/uploadthing"
 import { X, Upload, Loader2 } from "lucide-react"
 import { useState, useCallback } from "react"
 import { useDropzone } from "react-dropzone"
@@ -12,7 +11,6 @@ interface ImageUploadProps {
   value?: string
   onChange: (url: string) => void
   onRemove?: () => void
-  endpoint: "restaurantLogo" | "restaurantCover" | "restaurantGallery"
   disabled?: boolean
   className?: string
 }
@@ -21,34 +19,41 @@ export function ImageUpload({
   value,
   onChange,
   onRemove,
-  endpoint,
   disabled,
   className,
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
 
-  const { startUpload, isUploading: isUploadingState } = useUploadThing(endpoint, {
-    onClientUploadComplete: (res) => {
-      if (res && res[0]) {
-        onChange(res[0].url)
-        setIsUploading(false)
-      }
-    },
-    onUploadError: (error: Error) => {
-      console.error("Upload error:", error)
-      setIsUploading(false)
-      alert(`Error al subir la imagen: ${error.message}`)
-    },
-  })
-
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
       if (acceptedFiles.length > 0) {
         setIsUploading(true)
-        await startUpload(acceptedFiles)
+
+        try {
+          const file = acceptedFiles[0]
+          const formData = new FormData()
+          formData.append("file", file)
+
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          })
+
+          if (!response.ok) {
+            throw new Error("Upload failed")
+          }
+
+          const data = await response.json()
+          onChange(data.url)
+        } catch (error) {
+          console.error("Upload error:", error)
+          alert("Error al subir la imagen. Por favor intenta de nuevo.")
+        } finally {
+          setIsUploading(false)
+        }
       }
     },
-    [startUpload]
+    [onChange]
   )
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -57,7 +62,7 @@ export function ImageUpload({
       'image/*': ['.png', '.jpg', '.jpeg', '.webp']
     },
     maxFiles: 1,
-    disabled: disabled || isUploading || isUploadingState,
+    disabled: disabled || isUploading,
   })
 
   return (
@@ -88,12 +93,12 @@ export function ImageUpload({
           className={cn(
             "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-colors",
             isDragActive && "border-primary bg-primary/5",
-            (disabled || isUploading || isUploadingState) && "cursor-not-allowed opacity-50",
+            (disabled || isUploading) && "cursor-not-allowed opacity-50",
             !value && !isDragActive && "hover:border-primary/50 hover:bg-gray-50"
           )}
         >
           <input {...getInputProps()} />
-          {isUploading || isUploadingState ? (
+          {isUploading ? (
             <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
           ) : (
             <Upload className="h-8 w-8 text-gray-400" />

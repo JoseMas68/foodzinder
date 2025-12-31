@@ -3,7 +3,9 @@ import { getCurrentUser, canEditRestaurant } from '@/lib/auth/roles'
 import { updateRestaurant } from '@/server/actions/restaurants'
 import { prisma } from '@/lib/prisma'
 import { RestaurantForm } from '@/components/dashboard/restaurants/restaurant-form'
+import { RestaurantMenus } from '@/components/dashboard/restaurants/restaurant-menus'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
 import { ChevronLeft, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -175,6 +177,41 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
         onSubmit={handleUpdateRestaurant}
         isEditing
         cuisineTypes={cuisineTypes}
+      />
+
+      <Separator className="my-8" />
+
+      {/* Menus Section */}
+      <RestaurantMenus
+        restaurantId={id}
+        availableMenus={await prisma.menu.findMany({
+          where: { ownerId: user.id },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            price: true,
+            isActive: true,
+          },
+          orderBy: { title: 'asc' },
+        })}
+        assignedMenus={await prisma.restaurantMenu.findMany({
+          where: { restaurantId: id },
+          include: {
+            menu: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                price: true,
+                isActive: true,
+              },
+            },
+          },
+        }).then(menus => menus.map(m => ({
+          ...m.menu,
+          assignedAt: m.assignedAt,
+        })))}
       />
     </div>
   )

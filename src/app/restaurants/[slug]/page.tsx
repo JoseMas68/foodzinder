@@ -12,7 +12,8 @@ import {
   Star,
   Heart,
   Share2,
-  ChevronLeft
+  ChevronLeft,
+  UtensilsCrossed
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -68,6 +69,24 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
       reviews: {
         select: {
           rating: true,
+        },
+      },
+      menus: {
+        where: {
+          menu: {
+            isActive: true,
+          },
+        },
+        include: {
+          menu: {
+            include: {
+              dishes: {
+                orderBy: {
+                  order: 'asc',
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -193,6 +212,81 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
                   </p>
                 </CardContent>
               </Card>
+
+              {/* Menús */}
+              {restaurant.menus.length > 0 && (
+                <Card>
+                  <CardContent className="p-8">
+                    <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+                      <UtensilsCrossed className="h-6 w-6 text-primary" />
+                      Menús
+                    </h2>
+                    <div className="space-y-8">
+                      {restaurant.menus.map(({ menu }) => (
+                        <div key={menu.id} className="border-b last:border-0 pb-6 last:pb-0">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h3 className="text-xl font-semibold text-gray-900">{menu.title}</h3>
+                              {menu.description && (
+                                <p className="text-gray-600 mt-1">{menu.description}</p>
+                              )}
+                            </div>
+                            {menu.price && (
+                              <div className="text-right">
+                                <div className="text-2xl font-bold text-primary">
+                                  {new Intl.NumberFormat('es-ES', {
+                                    style: 'currency',
+                                    currency: 'EUR',
+                                  }).format(Number(menu.price))}
+                                </div>
+                                <p className="text-xs text-gray-500">Menú completo</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Platos del menú */}
+                          {menu.dishes.length > 0 && (
+                            <div className="mt-4 space-y-3">
+                              {menu.dishes.map((dish) => (
+                                <div
+                                  key={dish.id}
+                                  className="flex justify-between items-start gap-4 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                  <div className="flex-1">
+                                    <h4 className="font-medium text-gray-900">{dish.name}</h4>
+                                    {dish.description && (
+                                      <p className="text-sm text-gray-600 mt-1">{dish.description}</p>
+                                    )}
+                                    {dish.allergens.length > 0 && (
+                                      <div className="flex flex-wrap gap-1 mt-2">
+                                        {dish.allergens.map((allergen, idx) => (
+                                          <Badge key={idx} variant="outline" className="text-xs">
+                                            {allergen}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                  {!menu.price && (
+                                    <div className="text-right flex-shrink-0">
+                                      <span className="font-semibold text-gray-900">
+                                        {new Intl.NumberFormat('es-ES', {
+                                          style: 'currency',
+                                          currency: 'EUR',
+                                        }).format(Number(dish.price))}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Horarios */}
               <Card>
