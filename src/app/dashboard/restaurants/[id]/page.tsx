@@ -7,7 +7,7 @@ import { RestaurantMenus } from '@/components/dashboard/restaurants/restaurant-m
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
-import { ChevronLeft, ExternalLink } from 'lucide-react'
+import { ChevronLeft, ExternalLink, UtensilsCrossed } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getTaxonomies } from '@/server/queries/restaurants'
@@ -39,8 +39,13 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
     redirect('/dashboard/restaurants')
   }
 
-  // Obtener tipos de cocina disponibles
-  const cuisineTypes = await getTaxonomies('CUISINE_TYPE')
+  // Obtener todas las taxonomías disponibles
+  const [cuisineTypes, features, dietary, ambiances] = await Promise.all([
+    getTaxonomies('CUISINE_TYPE'),
+    getTaxonomies('RESTAURANT_FEATURE'),
+    getTaxonomies('DIETARY'),
+    getTaxonomies('AMBIANCE'),
+  ])
 
   // Obtener restaurante con todas sus relaciones
   const restaurant = await prisma.restaurant.findUnique({
@@ -73,6 +78,11 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
       taxonomies: {
         select: {
           taxonomyId: true,
+          taxonomy: {
+            select: {
+              type: true,
+            },
+          },
         },
       },
     },
@@ -124,6 +134,15 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
                 <ExternalLink className="h-3 w-3" />
               </Link>
             </Button>
+            <Button variant="link" size="sm" asChild className="h-auto p-0">
+              <Link
+                href={`/dashboard/restaurants/${id}/tables`}
+                className="flex items-center gap-1"
+              >
+                <UtensilsCrossed className="h-3 w-3" />
+                Gestionar Mesas
+              </Link>
+            </Button>
           </div>
         </div>
       </div>
@@ -166,7 +185,10 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
           website: restaurant.website || undefined,
           logoUrl: restaurant.logoUrl || undefined,
           coverUrl: restaurant.coverUrl || undefined,
-          cuisineTypeIds: restaurant.taxonomies.map(t => t.taxonomyId),
+          cuisineTypeIds: restaurant.taxonomies.filter(t => t.taxonomy.type === 'CUISINE_TYPE').map(t => t.taxonomyId),
+          featureIds: restaurant.taxonomies.filter(t => t.taxonomy.type === 'RESTAURANT_FEATURE').map(t => t.taxonomyId),
+          dietaryIds: restaurant.taxonomies.filter(t => t.taxonomy.type === 'DIETARY').map(t => t.taxonomyId),
+          ambianceIds: restaurant.taxonomies.filter(t => t.taxonomy.type === 'AMBIANCE').map(t => t.taxonomyId),
           openingHours: restaurant.openingHours.map(h => ({
             dayOfWeek: h.dayOfWeek,
             openTime: h.openTime || undefined,
@@ -177,6 +199,9 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
         onSubmit={handleUpdateRestaurant}
         isEditing
         cuisineTypes={cuisineTypes}
+        features={features}
+        dietary={dietary}
+        ambiances={ambiances}
       />
 
       <Separator className="my-8" />
