@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Tooltip } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Link from "next/link";
@@ -81,10 +81,10 @@ export function RestaurantMap({
   };
 
   const priceRangeSymbol = {
-    CHEAP: "$",
-    MODERATE: "$$",
-    EXPENSIVE: "$$$",
-    LUXURY: "$$$$",
+    CHEAP: "€",
+    MODERATE: "€€",
+    EXPENSIVE: "€€€",
+    LUXURY: "€€€€",
   };
 
   return (
@@ -195,6 +195,17 @@ export function RestaurantMap({
                 click: () => handleRestaurantClick(restaurant),
               }}
             >
+              <Tooltip direction="top" offset={[0, -20]} opacity={0.9} permanent={false}>
+                <div className="text-center">
+                  <div className="font-semibold text-xs">{restaurant.name}</div>
+                  {restaurant.stats && (
+                    <div className="flex items-center justify-center gap-1 text-xs mt-0.5">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      <span>{restaurant.stats.averageRating.toFixed(1)}</span>
+                    </div>
+                  )}
+                </div>
+              </Tooltip>
               <Popup>
                 <div className="p-2">
                   <h3 className="font-semibold text-sm mb-2">{restaurant.name}</h3>

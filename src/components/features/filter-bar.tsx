@@ -178,10 +178,10 @@ export function FilterBar({ taxonomies = [], features = [], cities = [] }: Filte
   ];
 
   const priceRangeLabel: Record<PriceRange, string> = {
-    CHEAP: "$ Económico",
-    MODERATE: "$$ Moderado",
-    EXPENSIVE: "$$$ Caro",
-    LUXURY: "$$$$ Lujo",
+    CHEAP: "€ Económico",
+    MODERATE: "€€ Moderado",
+    EXPENSIVE: "€€€ Caro",
+    LUXURY: "€€€€ Lujo",
   };
 
   const AccordionSection = ({
@@ -357,29 +357,25 @@ export function FilterBar({ taxonomies = [], features = [], cities = [] }: Filte
         )}
 
         <AccordionSection id="rating" title="Valoración Mínima" count={selectedRating ? 1 : 0}>
-          <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map((rating) => (
-              <Button
-                key={rating}
-                variant={selectedRating === rating ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleRatingChange(rating)}
-                className="flex-1 h-10 font-semibold"
-              >
-                {rating}⭐
-              </Button>
+          <div className="space-y-2">
+            {[5, 4, 3, 2, 1].map((rating) => (
+              <div key={rating} className="flex items-center gap-2">
+                <Checkbox
+                  id={`rating-${rating}`}
+                  checked={selectedRating === rating}
+                  onCheckedChange={() => handleRatingChange(rating)}
+                />
+                <Label
+                  htmlFor={`rating-${rating}`}
+                  className="text-sm font-normal cursor-pointer flex-1 flex items-center gap-1"
+                >
+                  <span className="font-semibold">{rating}</span>
+                  <span className="text-yellow-500">★</span>
+                  <span className="text-gray-500">o más</span>
+                </Label>
+              </div>
             ))}
           </div>
-          {selectedRating && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setSelectedRating(null)}
-              className="w-full text-xs mt-2"
-            >
-              Limpiar valoración
-            </Button>
-          )}
         </AccordionSection>
       </div>
     </div>

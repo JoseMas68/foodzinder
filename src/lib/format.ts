@@ -19,16 +19,16 @@ export function formatPrice(
 }
 
 /**
- * Convierte un rango de precios a símbolos de dólar
+ * Convierte un rango de precios a símbolos de euro
  * @param range - Rango de precios (CHEAP, MODERATE, EXPENSIVE, LUXURY)
- * @returns String con símbolos ($, $$, $$$, $$$$)
+ * @returns String con símbolos (€, €€, €€€, €€€€)
  */
 export function formatPriceRange(range: PriceRange): string {
   const priceRangeMap: Record<PriceRange, string> = {
-    CHEAP: "$",
-    MODERATE: "$$",
-    EXPENSIVE: "$$$",
-    LUXURY: "$$$$",
+    CHEAP: "€",
+    MODERATE: "€€",
+    EXPENSIVE: "€€€",
+    LUXURY: "€€€€",
   };
 
   return priceRangeMap[range] ?? "N/A";
