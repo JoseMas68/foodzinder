@@ -4,6 +4,7 @@ import { PublicHeader } from '@/components/layout/public-header'
 import { HomeFooter } from '@/components/home'
 import { RestaurantReviews } from '@/components/reviews/restaurant-reviews'
 import { FavoriteButton } from '@/components/favorites/favorite-button'
+import { BookingForm } from '@/components/features/booking-form'
 import { auth } from '@clerk/nextjs/server'
 import Image from 'next/image'
 import {
@@ -45,7 +46,12 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
   // Get current user if authenticated
   const currentUser = userId ? await prisma.user.findUnique({
     where: { clerkId: userId },
-    select: { id: true }
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true
+    }
   }) : null
 
   // Obtener restaurante con todas sus relaciones
@@ -428,10 +434,18 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
                     </div>
                   </div>
 
-                  {/* Botón de Reserva - Placeholder */}
-                  <Button className="w-full" size="lg" disabled>
-                    Reservar Mesa (Próximamente)
-                  </Button>
+                  {/* Formulario de Reserva */}
+                  <div className="border-t pt-6">
+                    <BookingForm
+                      restaurantId={restaurant.id}
+                      restaurantName={restaurant.name}
+                      currentUser={currentUser ? {
+                        firstName: currentUser.firstName,
+                        lastName: currentUser.lastName,
+                        email: currentUser.email,
+                      } : null}
+                    />
+                  </div>
 
                   {/* Mapa */}
                   {restaurant.latitude && restaurant.longitude && (

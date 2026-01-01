@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Building2, Home, PlusCircle, Settings, UtensilsCrossed, Star, Heart, Layout } from 'lucide-react'
+import { Building2, Home, PlusCircle, Settings, UtensilsCrossed, Star, Heart, Layout, ShieldCheck, Calendar, ClipboardList } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 
 const navigation = [
@@ -33,6 +33,11 @@ const navigation = [
     icon: Star,
   },
   {
+    name: 'Mis Reservas',
+    href: '/dashboard/bookings',
+    icon: Calendar,
+  },
+  {
     name: 'Nuevo Restaurante',
     href: '/dashboard/restaurants/new',
     icon: PlusCircle,
@@ -44,7 +49,22 @@ const navigation = [
   },
 ]
 
+const ownerNavigation = [
+  {
+    name: 'Gestión de Reservas',
+    href: '/dashboard/restaurant-bookings',
+    icon: ClipboardList,
+    ownerOnly: true,
+  },
+]
+
 const adminNavigation = [
+  {
+    name: 'Moderación',
+    href: '/dashboard/admin/moderation',
+    icon: ShieldCheck,
+    adminOnly: true,
+  },
   {
     name: 'Page Builder',
     href: '/dashboard/admin/page-builder',
@@ -56,6 +76,7 @@ const adminNavigation = [
 export function DashboardSidebar({ userRole }: { userRole?: string }) {
   const pathname = usePathname()
   const isAdmin = userRole === 'ADMIN'
+  const isOwner = userRole === 'OWNER' || userRole === 'ADMIN'
 
   return (
     <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 border-r bg-white">
@@ -85,6 +106,35 @@ export function DashboardSidebar({ userRole }: { userRole?: string }) {
               </Link>
             )
           })}
+
+          {/* Owner Section */}
+          {isOwner && (
+            <>
+              <div className="pt-4 mt-4 border-t">
+                <p className="px-3 mb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                  Gestión de Negocio
+                </p>
+              </div>
+              {ownerNavigation.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      'flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors',
+                      isActive
+                        ? 'bg-primary/10 text-primary'
+                        : 'text-gray-600 hover:bg-muted hover:text-gray-900'
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    {item.name}
+                  </Link>
+                )
+              })}
+            </>
+          )}
 
           {/* Admin Section */}
           {isAdmin && (
