@@ -100,7 +100,7 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
   - [x] Indicador visual (corazón relleno)
   - [x] Sign-in prompt para no autenticados
 
-- [x] Sistema de Reservas (Bookings) ✅ COMPLETADO:
+- [x] Sistema de Reservas (Bookings) ✅ COMPLETADO (Fase 1):
   - [x] Modelo de datos Booking en Prisma
   - [x] Validaciones con Zod (bookingCreateSchema, bookingUpdateSchema)
   - [x] Server actions completas:
@@ -109,6 +109,9 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
     - [x] cancelBooking (usuario, owner o admin)
     - [x] getMyBookings (reservas del usuario)
     - [x] getRestaurantBookings (reservas de restaurantes del owner/admin)
+    - [x] checkTableAvailability (verificar disponibilidad de mesa)
+    - [x] getAvailableTablesForBooking (obtener mesas disponibles)
+    - [x] assignTableToBooking (asignar mesa a reserva con validación)
   - [x] Componente BookingForm con validación
   - [x] Integración del formulario en página pública de restaurante
   - [x] Dashboard "Mis Reservas" (usuarios) con:
@@ -120,10 +123,32 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
     - [x] Vista de todas las reservas de sus restaurantes
     - [x] Filtros por restaurante y estado
     - [x] Cambio de estado de reservas (selector dinámico)
+    - [x] Asignación manual de mesas con selector inteligente
     - [x] Información completa del cliente
+    - [x] Visualización de mesa asignada (número + área)
   - [x] Navegación en sidebar del dashboard
+  - [x] **Fase 1: Validación de Disponibilidad de Mesas ✅ COMPLETADO**:
+    - [x] Verificación de conflictos de horarios (duración 90min)
+    - [x] Validación al crear reserva (bloquea si no hay mesas)
+    - [x] Validación al asignar mesa (impide sobreescribir reservas)
+    - [x] UI mejorada mostrando mesas disponibles/ocupadas en tiempo real
+    - [x] Contador de disponibilidad con badges
+    - [x] Agrupación por áreas del restaurante
+  - [ ] **Fase 2: Sistema de Slots de Reserva** (PENDIENTE - MEDIA PRIORIDAD):
+    - [ ] Modelo BookingSlotConfig (ya existe en schema.prisma)
+    - [ ] CRUD de slots para owners (ej: "Almuerzo 13:00-16:00, Lun-Vie")
+    - [ ] Validación de reservas contra slots configurados
+    - [ ] Mostrar solo horarios disponibles según slots activos
+    - [ ] Control de capacidad por slot (max mesas/personas)
+    - Ver detalles en `docs/sistema-reservas-plan.md`
+  - [ ] **Fase 3: Auto-asignación de Mesas** (PENDIENTE - BAJA PRIORIDAD):
+    - [ ] Algoritmo de sugerencia automática de mesa óptima
+    - [ ] Consideración de capacidad y evitar desperdicio
   - [ ] Sistema de notificaciones por email
-  - [ ] Validación de disponibilidad y horarios en tiempo real
+  - [ ] **Fase 4: WebSockets / Tiempo Real** (FUTURO - OPCIONAL):
+    - [ ] Actualización en tiempo real de disponibilidad
+    - [ ] Bloqueo temporal durante proceso de reserva
+    - [ ] Notificaciones push a owners
 
 **Pendiente:**
 - [ ] Buscador avanzado con Meilisearch.

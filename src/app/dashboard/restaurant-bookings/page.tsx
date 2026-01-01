@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Users, Clock, Phone, Mail, User, MessageSquare, Store } from "lucide-react";
 import Image from "next/image";
 import { BookingStatusSelector } from "@/components/bookings/booking-status-selector";
+import { AssignTableSelector } from "@/components/bookings/assign-table-selector";
 import {
   Select,
   SelectContent,
@@ -51,15 +52,25 @@ export default async function RestaurantBookingsPage({ searchParams }: PageProps
   const selectedRestaurantId = params.restaurant;
   const selectedStatus = params.status;
 
-  // Query de reservas
+  // Query de reservas - SIEMPRE filtrar por restaurantes del owner si no es admin
   const whereClause: any = {};
 
   if (selectedRestaurantId) {
-    whereClause.restaurantId = selectedRestaurantId;
-  } else if (user.role === "OWNER") {
-    whereClause.restaurantId = {
-      in: restaurants.map((r) => r.id),
-    };
+    // Si se selecciona un restaurante específico, verificar que pertenece al owner
+    const ownsRestaurant = user.role === "ADMIN" || restaurants.some(r => r.id === selectedRestaurantId);
+    if (!ownsRestaurant) {
+      // Si no es dueño de este restaurante y no es admin, no mostrar nada
+      whereClause.restaurantId = "invalid-id";
+    } else {
+      whereClause.restaurantId = selectedRestaurantId;
+    }
+  } else {
+    // Sin filtro de restaurante: mostrar solo los del owner (o todos si es admin)
+    if (user.role !== "ADMIN") {
+      whereClause.restaurantId = {
+        in: restaurants.map((r) => r.id),
+      };
+    }
   }
 
   if (selectedStatus) {
@@ -83,6 +94,16 @@ export default async function RestaurantBookingsPage({ searchParams }: PageProps
           firstName: true,
           lastName: true,
           email: true,
+        },
+      },
+      table: {
+        select: {
+          id: true,
+          tableNumber: true,
+          capacity: true,
+          minCapacity: true,
+          area: true,
+          shape: true,
         },
       },
     },
@@ -165,6 +186,14 @@ export default async function RestaurantBookingsPage({ searchParams }: PageProps
                     {booking.partySize} {booking.partySize === 1 ? "persona" : "personas"}
                   </span>
                 </div>
+
+                {booking.table && (
+                  <div className="flex items-center gap-2 text-gray-700">
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
+                      Mesa {booking.table.tableNumber} {booking.table.area && `- ${booking.table.area}`}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -174,6 +203,14 @@ export default async function RestaurantBookingsPage({ searchParams }: PageProps
               <BookingStatusSelector
                 bookingId={booking.id}
                 currentStatus={booking.status}
+              />
+              <AssignTableSelector
+                bookingId={booking.id}
+                currentTableId={booking.tableId}
+                restaurantId={booking.restaurantId}
+                bookingDate={booking.date}
+                bookingTime={booking.time}
+                partySize={booking.partySize}
               />
             </div>
           </div>

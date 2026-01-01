@@ -32,6 +32,27 @@ export async function createBooking(formData: any) {
       throw new Error("Este restaurante no está disponible para reservas");
     }
 
+    // VALIDACIÓN CRÍTICA: Verificar que hay capacidad disponible
+    const availableTables = await getAvailableTablesForBooking(
+      validated.restaurantId,
+      new Date(validated.date),
+      validated.time,
+      validated.partySize
+    );
+
+    if (!availableTables.success || !availableTables.data) {
+      throw new Error("Error al verificar disponibilidad");
+    }
+
+    // Filtrar solo las mesas disponibles
+    const tablesAvailable = availableTables.data.filter((t: any) => t.isAvailable);
+
+    if (tablesAvailable.length === 0) {
+      throw new Error(
+        "Lo sentimos, no hay mesas disponibles para esa fecha, hora y número de personas. Por favor selecciona otro horario."
+      );
+    }
+
     // Crear la reserva
     const booking = await prisma.booking.create({
       data: {
@@ -266,5 +287,222 @@ export async function getRestaurantBookings(restaurantId?: string) {
   } catch (error: any) {
     console.error("Error fetching restaurant bookings:", error);
     return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Verificar disponibilidad de una mesa en una fecha/hora específica
+ */
+export async function checkTableAvailability(
+  tableId: string,
+  date: Date,
+  time: string,
+  excludeBookingId?: string
+): Promise<{ available: boolean; conflictingBooking?: any }> {
+  try {
+    // Duración por defecto de una reserva (90 minutos)
+    const BOOKING_DURATION_MINUTES = 90;
+
+    // Convertir la hora de reserva a minutos desde medianoche
+    const [hours, minutes] = time.split(":").map(Number);
+    const bookingStartMinutes = hours * 60 + minutes;
+    const bookingEndMinutes = bookingStartMinutes + BOOKING_DURATION_MINUTES;
+
+    // Buscar reservas confirmadas o pendientes en la misma mesa y fecha
+    const conflictingBookings = await prisma.booking.findMany({
+      where: {
+        tableId,
+        date: {
+          equals: date,
+        },
+        status: {
+          in: ["PENDING", "CONFIRMED"],
+        },
+        ...(excludeBookingId && {
+          id: {
+            not: excludeBookingId,
+          },
+        }),
+      },
+      select: {
+        id: true,
+        time: true,
+        partySize: true,
+        customerName: true,
+      },
+    });
+
+    // Verificar si hay conflicto de horarios
+    for (const booking of conflictingBookings) {
+      const [existingHours, existingMinutes] = booking.time.split(":").map(Number);
+      const existingStartMinutes = existingHours * 60 + existingMinutes;
+      const existingEndMinutes = existingStartMinutes + BOOKING_DURATION_MINUTES;
+
+      // Hay conflicto si los rangos se solapan
+      const hasConflict =
+        (bookingStartMinutes >= existingStartMinutes && bookingStartMinutes < existingEndMinutes) ||
+        (bookingEndMinutes > existingStartMinutes && bookingEndMinutes <= existingEndMinutes) ||
+        (bookingStartMinutes <= existingStartMinutes && bookingEndMinutes >= existingEndMinutes);
+
+      if (hasConflict) {
+        return {
+          available: false,
+          conflictingBooking: booking,
+        };
+      }
+    }
+
+    return { available: true };
+  } catch (error) {
+    console.error("Error checking table availability:", error);
+    return { available: false };
+  }
+}
+
+/**
+ * Obtener mesas disponibles para una reserva específica
+ */
+export async function getAvailableTablesForBooking(
+  restaurantId: string,
+  date: Date,
+  time: string,
+  partySize: number,
+  excludeBookingId?: string
+) {
+  try {
+    // Obtener todas las mesas activas del restaurante
+    const tables = await prisma.table.findMany({
+      where: {
+        restaurantId,
+        isActive: true,
+        minCapacity: { lte: partySize },
+        capacity: { gte: partySize },
+      },
+      select: {
+        id: true,
+        tableNumber: true,
+        capacity: true,
+        minCapacity: true,
+        area: true,
+        shape: true,
+      },
+      orderBy: [
+        { area: "asc" },
+        { tableNumber: "asc" },
+      ],
+    });
+
+    // Verificar disponibilidad de cada mesa
+    const availabilityChecks = await Promise.all(
+      tables.map(async (table) => {
+        const availability = await checkTableAvailability(
+          table.id,
+          date,
+          time,
+          excludeBookingId
+        );
+        return {
+          ...table,
+          isAvailable: availability.available,
+          conflictingBooking: availability.conflictingBooking,
+        };
+      })
+    );
+
+    return { success: true, data: availabilityChecks };
+  } catch (error: any) {
+    console.error("Error getting available tables:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Asignar una mesa a una reserva
+ */
+export async function assignTableToBooking(bookingId: string, tableId: string | null) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) throw new Error("No autorizado");
+
+    // Verificar que la reserva existe
+    const existingBooking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        restaurant: {
+          select: { ownerId: true, id: true },
+        },
+      },
+    });
+
+    if (!existingBooking) {
+      throw new Error("Reserva no encontrada");
+    }
+
+    // Solo el owner del restaurante o un admin pueden asignar mesas
+    const canAssign =
+      existingBooking.restaurant.ownerId === user.id ||
+      user.role === "ADMIN";
+
+    if (!canAssign) {
+      throw new Error("No tienes permiso para asignar mesas");
+    }
+
+    // Si se está asignando una mesa, verificar que existe y pertenece al restaurante
+    if (tableId) {
+      const table = await prisma.table.findUnique({
+        where: { id: tableId },
+        select: {
+          id: true,
+          restaurantId: true,
+          isActive: true,
+          minCapacity: true,
+          capacity: true,
+        },
+      });
+
+      if (!table) {
+        throw new Error("Mesa no encontrada");
+      }
+
+      if (table.restaurantId !== existingBooking.restaurant.id) {
+        throw new Error("La mesa no pertenece a este restaurante");
+      }
+
+      if (!table.isActive) {
+        throw new Error("Esta mesa no está activa");
+      }
+
+      // Verificar que la mesa pueda acomodar al grupo
+      if (existingBooking.partySize < table.minCapacity || existingBooking.partySize > table.capacity) {
+        throw new Error(`Esta mesa solo puede acomodar de ${table.minCapacity} a ${table.capacity} personas`);
+      }
+
+      // VALIDACIÓN CRÍTICA: Verificar disponibilidad de la mesa
+      const availability = await checkTableAvailability(
+        tableId,
+        existingBooking.date,
+        existingBooking.time,
+        bookingId // Excluir la reserva actual si se está reasignando
+      );
+
+      if (!availability.available) {
+        throw new Error(
+          `Esta mesa ya está reservada a las ${existingBooking.time}. Hay conflicto con otra reserva.`
+        );
+      }
+    }
+
+    // Actualizar la reserva
+    const booking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { tableId },
+    });
+
+    revalidatePath("/dashboard/restaurant-bookings");
+
+    return { success: true, data: booking };
+  } catch (error: any) {
+    console.error("Error assigning table to booking:", error);
+    return { success: false, error: error.message || "Error al asignar la mesa" };
   }
 }
