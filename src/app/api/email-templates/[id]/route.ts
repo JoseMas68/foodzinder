@@ -9,7 +9,7 @@ export async function GET(
   try {
     const user = await getCurrentUser();
 
-    if (!user || user.role !== "ADMIN") {
+    if (!user || (user.role !== "ADMIN" && user.role !== "OWNER")) {
       return NextResponse.json({ error: "No autorizado" }, { status: 403 });
     }
 

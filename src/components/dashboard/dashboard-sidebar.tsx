@@ -61,6 +61,11 @@ const ownerNavigation = [
     href: '/dashboard/restaurant-bookings',
     icon: ClipboardList,
   },
+  {
+    name: 'Plantillas de Email',
+    href: '/dashboard/email-templates',
+    icon: Mail,
+  },
 ]
 
 const adminNavigation = [
@@ -80,12 +85,6 @@ const adminNavigation = [
     name: 'Page Builder',
     href: '/dashboard/admin/page-builder',
     icon: Layout,
-    adminOnly: true,
-  },
-  {
-    name: 'Plantillas de Email',
-    href: '/dashboard/admin/email-templates',
-    icon: Mail,
     adminOnly: true,
   },
 ]

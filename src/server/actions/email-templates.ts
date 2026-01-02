@@ -8,7 +8,7 @@ import { EmailTemplateType } from "@prisma/client";
 export async function getEmailTemplates() {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== "ADMIN") {
+    if (!user || (user.role !== "ADMIN" && user.role !== "OWNER")) {
       throw new Error("No autorizado");
     }
 
@@ -53,7 +53,7 @@ export async function updateEmailTemplate(
 ) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== "ADMIN") {
+    if (!user || (user.role !== "ADMIN" && user.role !== "OWNER")) {
       throw new Error("No autorizado");
     }
 
@@ -62,6 +62,7 @@ export async function updateEmailTemplate(
       data,
     });
 
+    revalidatePath("/dashboard/email-templates");
     revalidatePath("/dashboard/admin/email-templates");
 
     return { success: true, data: template };
@@ -74,7 +75,7 @@ export async function updateEmailTemplate(
 export async function toggleTemplateStatus(id: string) {
   try {
     const user = await getCurrentUser();
-    if (!user || user.role !== "ADMIN") {
+    if (!user || (user.role !== "ADMIN" && user.role !== "OWNER")) {
       throw new Error("No autorizado");
     }
 
@@ -91,6 +92,7 @@ export async function toggleTemplateStatus(id: string) {
       data: { isActive: !template.isActive },
     });
 
+    revalidatePath("/dashboard/email-templates");
     revalidatePath("/dashboard/admin/email-templates");
 
     return { success: true, data: updated };
