@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Popup, useMap, Tooltip } from "react-leaflet";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { MapContainer, TileLayer, Marker, Popup, useMap, Tooltip, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Link from "next/link";
@@ -51,6 +51,25 @@ function MapController({ center }: { center: [number, number] }) {
   return null;
 }
 
+function MapEvents({ onBoundsChange }: { onBoundsChange: (bounds: L.LatLngBounds) => void }) {
+  const map = useMapEvents({
+    moveend: () => {
+      onBoundsChange(map.getBounds());
+    },
+    zoomend: () => {
+      onBoundsChange(map.getBounds());
+    },
+  });
+  
+  // Trigger initial bounds
+  useEffect(() => {
+    onBoundsChange(map.getBounds());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map]);
+
+  return null;
+}
+
 export function RestaurantMap({
   restaurants,
   center = [40.4168, -3.7038], // Madrid coordinates by default
@@ -58,11 +77,15 @@ export function RestaurantMap({
 }: RestaurantMapProps) {
   const [isListOpen, setIsListOpen] = useState(true);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [hoveredRestaurantId, setHoveredRestaurantId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(center);
-
-  const restaurantsWithLocation = restaurants.filter(
+  const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  
+  const restaurantsWithLocation = useMemo(() => restaurants.filter(
     (r) => r.latitude && r.longitude
-  );
+  ), [restaurants]);
+
+  const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>(restaurantsWithLocation);
 
   // Calculate center based on restaurants if available
   useEffect(() => {
@@ -70,8 +93,26 @@ export function RestaurantMap({
       const avgLat = restaurantsWithLocation.reduce((sum, r) => sum + r.latitude!, 0) / restaurantsWithLocation.length;
       const avgLng = restaurantsWithLocation.reduce((sum, r) => sum + r.longitude!, 0) / restaurantsWithLocation.length;
       setMapCenter([avgLat, avgLng]);
+      setVisibleRestaurants(restaurantsWithLocation);
     }
-  }, [restaurants]);
+  }, [restaurantsWithLocation]);
+
+  const handleBoundsChange = useCallback((bounds: L.LatLngBounds) => {
+    const visible = restaurantsWithLocation.filter((r) => 
+      r.latitude && r.longitude && bounds.contains([r.latitude, r.longitude])
+    );
+    setVisibleRestaurants(visible);
+  }, [restaurantsWithLocation]);
+
+  // Scroll to selected restaurant in list
+  useEffect(() => {
+    if (selectedRestaurant && isListOpen) {
+      const element = itemRefs.current[selectedRestaurant.id];
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [selectedRestaurant, isListOpen]);
 
   const handleRestaurantClick = (restaurant: Restaurant) => {
     setSelectedRestaurant(restaurant);
@@ -99,18 +140,23 @@ export function RestaurantMap({
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             <div className="sticky top-0 bg-white pb-2 mb-2 border-b">
               <h3 className="font-bold text-lg">
-                {restaurantsWithLocation.length} restaurantes
+                {visibleRestaurants.length} restaurantes visibles
               </h3>
             </div>
-            {restaurantsWithLocation.map((restaurant) => (
+            {visibleRestaurants.map((restaurant) => (
               <div
                 key={restaurant.id}
+                ref={(el) => {
+                  itemRefs.current[restaurant.id] = el;
+                }}
                 className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                  selectedRestaurant?.id === restaurant.id
+                  selectedRestaurant?.id === restaurant.id || hoveredRestaurantId === restaurant.id
                     ? "border-primary bg-primary/5"
                     : "border-gray-200 hover:border-primary/50"
                 }`}
                 onClick={() => handleRestaurantClick(restaurant)}
+                onMouseEnter={() => setHoveredRestaurantId(restaurant.id)}
+                onMouseLeave={() => setHoveredRestaurantId(null)}
               >
                 <div className="flex gap-3">
                   {restaurant.logoUrl && (
@@ -182,6 +228,7 @@ export function RestaurantMap({
           className="h-full w-full"
         >
           <MapController center={mapCenter} />
+          <MapEvents onBoundsChange={handleBoundsChange} />
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -191,8 +238,12 @@ export function RestaurantMap({
             <Marker
               key={restaurant.id}
               position={[restaurant.latitude!, restaurant.longitude!]}
+              opacity={hoveredRestaurantId === restaurant.id ? 1 : 0.8}
+              zIndexOffset={hoveredRestaurantId === restaurant.id ? 1000 : 0}
               eventHandlers={{
                 click: () => handleRestaurantClick(restaurant),
+                mouseover: () => setHoveredRestaurantId(restaurant.id),
+                mouseout: () => setHoveredRestaurantId(null),
               }}
             >
               <Tooltip direction="top" offset={[0, -20]} opacity={0.9} permanent={false}>
