@@ -19,8 +19,13 @@ export default async function NewRestaurantPage() {
     redirect('/')
   }
 
-  // Obtener tipos de cocina para el selector
-  const cuisineTypes = await getTaxonomies('CUISINE_TYPE')
+  // Obtener todas las taxonomías para los selectores
+  const [cuisineTypes, features, dietary, ambiances] = await Promise.all([
+    getTaxonomies('CUISINE_TYPE'),
+    getTaxonomies('RESTAURANT_FEATURE'),
+    getTaxonomies('DIETARY'),
+    getTaxonomies('AMBIANCE'),
+  ])
 
   async function handleCreateRestaurant(data: any) {
     'use server'
@@ -63,7 +68,13 @@ export default async function NewRestaurantPage() {
       </Card>
 
       {/* Form */}
-      <RestaurantForm onSubmit={handleCreateRestaurant} cuisineTypes={cuisineTypes} />
+      <RestaurantForm
+        onSubmit={handleCreateRestaurant}
+        cuisineTypes={cuisineTypes}
+        features={features}
+        dietary={dietary}
+        ambiances={ambiances}
+      />
     </div>
   )
 }

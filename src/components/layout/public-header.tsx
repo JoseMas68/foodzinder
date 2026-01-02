@@ -26,8 +26,8 @@ export function PublicHeader() {
                 variant="ghost"
                 className={`font-semibold transition-colors ${
                   isOnHomePage
-                    ? "text-primary bg-primary/5 hover:bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-primary bg-primary/5"
+                    : "text-muted-foreground hover:text-white"
                 }`}
               >
                 Inicio
@@ -38,8 +38,8 @@ export function PublicHeader() {
                 variant="ghost"
                 className={`font-semibold transition-colors ${
                   isOnRestaurantsPage
-                    ? "text-primary bg-primary/5 hover:bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "text-primary bg-primary/5"
+                    : "text-muted-foreground hover:text-white"
                 }`}
               >
                 Buscar Restaurante

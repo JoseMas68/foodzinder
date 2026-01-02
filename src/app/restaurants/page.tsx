@@ -98,6 +98,10 @@ export default async function RestaurantsPage({ searchParams }: PageProps) {
   const offset = (page - 1) * limit;
   const view = params.view || "list";
 
+  // Para la vista de mapa, cargar todos los restaurantes; para lista, solo la página actual
+  const searchLimit = view === "map" ? 1000 : limit;
+  const searchOffset = view === "map" ? 0 : offset;
+
   // Get current user and fetch data in parallel
   const [currentUser, searchResults, cuisineTaxonomies, featureTaxonomies, cities] = await Promise.all([
     getCurrentUser(),
@@ -111,8 +115,8 @@ export default async function RestaurantsPage({ searchParams }: PageProps) {
       lat: params.lat,
       lng: params.lng,
       sort: params.sort || "rating",
-      limit,
-      offset,
+      limit: searchLimit,
+      offset: searchOffset,
     }),
     getTaxonomies("CUISINE_TYPE"),
     getTaxonomies("RESTAURANT_FEATURE"),
@@ -220,18 +224,18 @@ export default async function RestaurantsPage({ searchParams }: PageProps) {
                   {page > 1 && (
                     <a
                       href={`?${new URLSearchParams({ ...params, page: (page - 1).toString() }).toString()}`}
-                      className="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50"
+                      className="px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                     >
                       Anterior
                     </a>
                   )}
-                  <span className="px-4 py-2 bg-white border rounded-lg">
+                  <span className="px-4 py-2 bg-white border border-gray-200 rounded-lg">
                     Página {page} de {totalPages}
                   </span>
                   {page < totalPages && (
                     <a
                       href={`?${new URLSearchParams({ ...params, page: (page + 1).toString() }).toString()}`}
-                      className="px-4 py-2 bg-white border rounded-lg hover:bg-gray-50"
+                      className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors font-medium"
                     >
                       Siguiente
                     </a>

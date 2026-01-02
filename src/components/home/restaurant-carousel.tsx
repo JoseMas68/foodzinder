@@ -23,11 +23,12 @@ interface Restaurant {
 
 interface RestaurantCarouselProps {
   title: string;
+  subtitle?: string | null;
   restaurants: Restaurant[];
   isAuthenticated?: boolean;
 }
 
-export function RestaurantCarousel({ title, restaurants, isAuthenticated }: RestaurantCarouselProps) {
+export function RestaurantCarousel({ title, subtitle, restaurants, isAuthenticated }: RestaurantCarouselProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
@@ -45,9 +46,14 @@ export function RestaurantCarousel({ title, restaurants, isAuthenticated }: Rest
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900">
-          {title}
-        </h2>
+        <div>
+          <h2 className="text-2xl md:text-3xl font-heading font-bold text-gray-900">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-muted-foreground mt-1">{subtitle}</p>
+          )}
+        </div>
         <div className="flex gap-2">
           <Button
             variant="outline"

@@ -1,15 +1,23 @@
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar'
 import { DashboardHeader } from '@/components/dashboard/dashboard-header'
+import { getCurrentUser } from '@/lib/auth/roles'
+import { redirect } from 'next/navigation'
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    redirect('/sign-in')
+  }
+
   return (
     <div className="flex min-h-screen">
       {/* Sidebar */}
-      <DashboardSidebar />
+      <DashboardSidebar userRole={user.role} />
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">

@@ -38,6 +38,9 @@ export const restaurantCreateSchema = z.object({
   logoUrl: z.string().url("URL inválida").optional().or(z.literal("")),
   coverUrl: z.string().url("URL inválida").optional().or(z.literal("")),
   cuisineTypeIds: z.array(z.string()).optional(),
+  featureIds: z.array(z.string()).optional(),
+  dietaryIds: z.array(z.string()).optional(),
+  ambianceIds: z.array(z.string()).optional(),
   openingHours: z.array(openingHourSchema).optional(),
 });
 
@@ -99,3 +102,38 @@ export const billingDetailsSchema = z.object({
 });
 
 export type BillingDetails = z.infer<typeof billingDetailsSchema>;
+
+/**
+ * Booking Validations
+ */
+export const bookingCreateSchema = z.object({
+  restaurantId: z.string().uuid("ID de restaurante inválido"),
+  date: z.string().refine((val) => {
+    const date = new Date(val);
+    return date >= new Date() && !isNaN(date.getTime());
+  }, {
+    message: "La fecha debe ser hoy o posterior",
+  }),
+  time: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:mm)"),
+  partySize: z.number().int().min(1, "Mínimo 1 persona").max(20, "Máximo 20 personas"),
+  specialNotes: z.string().max(500, "Las notas no pueden exceder 500 caracteres").optional(),
+  customerName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
+  customerEmail: z.string().email("Email inválido"),
+  customerPhone: z.string().min(9, "El teléfono debe tener al menos 9 dígitos"),
+});
+
+export const bookingUpdateSchema = z.object({
+  date: z.string().refine((val) => {
+    const date = new Date(val);
+    return date >= new Date() && !isNaN(date.getTime());
+  }, {
+    message: "La fecha debe ser hoy o posterior",
+  }).optional(),
+  time: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, "Formato de hora inválido (HH:mm)").optional(),
+  partySize: z.number().int().min(1, "Mínimo 1 persona").max(20, "Máximo 20 personas").optional(),
+  specialNotes: z.string().max(500, "Las notas no pueden exceder 500 caracteres").optional(),
+  status: z.enum(["PENDING", "CONFIRMED", "CANCELLED", "COMPLETED", "NO_SHOW"]).optional(),
+});
+
+export type BookingCreate = z.infer<typeof bookingCreateSchema>;
+export type BookingUpdate = z.infer<typeof bookingUpdateSchema>;

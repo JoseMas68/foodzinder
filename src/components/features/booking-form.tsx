@@ -6,6 +6,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { bookingCreateSchema, type BookingCreate } from "@/lib/validations";
 import { createBooking } from "@/server/actions/bookings";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -15,8 +17,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -24,7 +24,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Calendar, Clock, Users, Loader2, Check } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, Clock, Users, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface BookingFormProps {
@@ -35,9 +36,15 @@ interface BookingFormProps {
     lastName: string;
     email: string;
   } | null;
+  openingHours?: Array<{
+    dayOfWeek: number;
+    openTime: string | null;
+    closeTime: string | null;
+    isClosed: boolean;
+  }>;
 }
 
-export function BookingForm({ restaurantId, restaurantName, currentUser }: BookingFormProps) {
+export function BookingForm({ restaurantId, restaurantName, currentUser, openingHours = [] }: BookingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -55,6 +62,47 @@ export function BookingForm({ restaurantId, restaurantName, currentUser }: Booki
     },
   });
 
+  // Generar horarios disponibles (cada 30 minutos)
+  const generateTimeSlots = () => {
+    const slots: string[] = [];
+    const selectedDate = form.watch("date");
+
+    if (!selectedDate) return slots;
+
+    const date = new Date(selectedDate);
+    const dayOfWeek = date.getDay();
+
+    // Buscar horario de apertura para ese día
+    const daySchedule = openingHours.find(h => h.dayOfWeek === dayOfWeek);
+
+    if (!daySchedule || daySchedule.isClosed || !daySchedule.openTime || !daySchedule.closeTime) {
+      return slots;
+    }
+
+    // Generar slots desde openTime hasta closeTime
+    const [openHour, openMin] = daySchedule.openTime.split(":").map(Number);
+    const [closeHour, closeMin] = daySchedule.closeTime.split(":").map(Number);
+
+    let currentHour = openHour;
+    let currentMin = openMin;
+
+    while (currentHour < closeHour || (currentHour === closeHour && currentMin < closeMin)) {
+      const timeString = `${String(currentHour).padStart(2, "0")}:${String(currentMin).padStart(2, "0")}`;
+      slots.push(timeString);
+
+      // Incrementar 30 minutos
+      currentMin += 30;
+      if (currentMin >= 60) {
+        currentMin = 0;
+        currentHour++;
+      }
+    }
+
+    return slots;
+  };
+
+  const timeSlots = generateTimeSlots();
+
   const onSubmit = async (data: BookingCreate) => {
     setIsSubmitting(true);
     try {
@@ -62,101 +110,150 @@ export function BookingForm({ restaurantId, restaurantName, currentUser }: Booki
 
       if (result.success) {
         setIsSuccess(true);
-        toast.success("¡Reserva creada!", {
-          description: "Te hemos enviado un email de confirmación.",
-        });
+        toast.success("¡Reserva creada exitosamente!");
         form.reset();
-        setTimeout(() => setIsSuccess(false), 3000);
       } else {
-        toast.error("Error al crear la reserva", {
-          description: result.error || "Por favor, intenta de nuevo",
-        });
+        toast.error(result.error || "Error al crear la reserva");
       }
     } catch (error) {
-      toast.error("Error inesperado", {
-        description: "Por favor, intenta de nuevo más tarde",
-      });
+      toast.error("Error inesperado al crear la reserva");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Generar opciones de hora (cada 30 minutos desde las 12:00 hasta las 23:30)
-  const timeOptions: string[] = [];
-  for (let hour = 12; hour < 24; hour++) {
-    for (let min = 0; min < 60; min += 30) {
-      const time = `${hour.toString().padStart(2, "0")}:${min.toString().padStart(2, "0")}`;
-      timeOptions.push(time);
-    }
-  }
+  // Obtener fecha mínima (hoy)
+  const today = new Date().toISOString().split("T")[0];
+  // Obtener fecha máxima (3 meses adelante)
+  const maxDate = new Date();
+  maxDate.setMonth(maxDate.getMonth() + 3);
+  const maxDateString = maxDate.toISOString().split("T")[0];
 
   if (isSuccess) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-2xl p-8 text-center">
-        <div className="flex justify-center mb-4">
-          <div className="bg-green-100 p-3 rounded-full">
-            <Check className="h-8 w-8 text-green-600" />
+      <Card className="border-green-200 bg-green-50">
+        <CardContent className="pt-6">
+          <div className="text-center space-y-4">
+            <CheckCircle2 className="h-16 w-16 text-green-600 mx-auto" />
+            <div>
+              <h3 className="text-2xl font-bold text-green-900">¡Reserva Confirmada!</h3>
+              <p className="text-green-700 mt-2">
+                Hemos enviado un correo de confirmación a tu email.
+              </p>
+              <p className="text-sm text-green-600 mt-1">
+                Te esperamos en {restaurantName}
+              </p>
+            </div>
+            <Button
+              onClick={() => setIsSuccess(false)}
+              variant="outline"
+              className="mt-4"
+            >
+              Hacer otra reserva
+            </Button>
           </div>
-        </div>
-        <h3 className="text-xl font-bold text-green-900 mb-2">
-          ¡Reserva Confirmada!
-        </h3>
-        <p className="text-green-700">
-          Recibirás un email de confirmación en breve.
-        </p>
-      </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-      <h3 className="text-2xl font-heading font-bold mb-2">Reservar mesa</h3>
-      <p className="text-gray-600 mb-6">en {restaurantName}</p>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Calendar className="h-5 w-5 text-pink-600" />
+          Reservar Mesa
+        </CardTitle>
+        <CardDescription>
+          Completa el formulario para reservar tu mesa en {restaurantName}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Fecha y Hora */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Fecha</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        min={today}
+                        max={maxDateString}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Fecha y Hora */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Hora</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={!form.watch("date") || timeSlots.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona una hora" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {timeSlots.length === 0 ? (
+                          <SelectItem value="no-slots" disabled>
+                            {form.watch("date") ? "Restaurante cerrado este día" : "Selecciona una fecha primero"}
+                          </SelectItem>
+                        ) : (
+                          timeSlots.map((slot) => (
+                            <SelectItem key={slot} value={slot}>
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-4 w-4" />
+                                {slot}
+                              </div>
+                            </SelectItem>
+                          ))
+                        )}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Número de Personas */}
             <FormField
               control={form.control}
-              name="date"
+              name="partySize"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Fecha
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      type="date"
-                      {...field}
-                      min={new Date().toISOString().split("T")[0]}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="time"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    Hora
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormLabel>Número de Personas</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(parseInt(value))}
+                    value={field.value?.toString()}
+                  >
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar hora" />
+                        <SelectValue placeholder="Selecciona número de personas" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent className="max-h-[200px]">
-                      {timeOptions.map((time) => (
-                        <SelectItem key={time} value={time}>
-                          {time}
+                    <SelectContent>
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map((num) => (
+                        <SelectItem key={num} value={num.toString()}>
+                          <div className="flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            {num} {num === 1 ? "persona" : "personas"}
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -165,124 +262,99 @@ export function BookingForm({ restaurantId, restaurantName, currentUser }: Booki
                 </FormItem>
               )}
             />
-          </div>
 
-          {/* Número de personas */}
-          <FormField
-            control={form.control}
-            name="partySize"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Número de personas
-                </FormLabel>
-                <Select
-                  onValueChange={(value) => field.onChange(parseInt(value))}
-                  defaultValue={field.value.toString()}
-                >
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20].map((num) => (
-                      <SelectItem key={num} value={num.toString()}>
-                        {num} {num === 1 ? "persona" : "personas"}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            {/* Información de Contacto */}
+            <div className="space-y-4 pt-4 border-t">
+              <h3 className="font-semibold text-lg">Información de Contacto</h3>
 
-          {/* Datos de contacto */}
-          <div className="space-y-4 pt-4 border-t">
-            <h4 className="font-semibold text-gray-900">Datos de contacto</h4>
+              <FormField
+                control={form.control}
+                name="customerName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nombre Completo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Juan Pérez" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="customerEmail"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="juan@ejemplo.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="customerPhone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Teléfono</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="tel"
+                          placeholder="+34 612 345 678"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Notas Especiales */}
             <FormField
               control={form.control}
-              name="customerName"
+              name="specialNotes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nombre completo</FormLabel>
+                  <FormLabel>Notas Especiales (Opcional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Juan Pérez" {...field} />
+                    <Textarea
+                      placeholder="Alergias, ocasión especial, preferencias de mesa..."
+                      className="min-h-24 resize-none"
+                      {...field}
+                    />
                   </FormControl>
+                  <FormDescription>
+                    Indícanos cualquier solicitud especial para tu reserva
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="customerEmail"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input type="email" placeholder="tu@email.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="customerPhone"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Teléfono</FormLabel>
-                    <FormControl>
-                      <Input type="tel" placeholder="612345678" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-
-          {/* Notas especiales */}
-          <FormField
-            control={form.control}
-            name="specialNotes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Notas especiales (opcional)</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Alergias, preferencias de asiento, celebración..."
-                    className="resize-none"
-                    rows={3}
-                    {...field}
-                  />
-                </FormControl>
-                <FormDescription>
-                  Máximo 500 caracteres
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Botón de envío */}
-          <Button
-            type="submit"
-            className="w-full"
-            size="lg"
-            disabled={isSubmitting}
-          >
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSubmitting ? "Creando reserva..." : "Confirmar reserva"}
-          </Button>
-        </form>
-      </Form>
-    </div>
+            {/* Botón de Envío */}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-pink-600 hover:bg-pink-700"
+              size="lg"
+            >
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmitting ? "Creando Reserva..." : "Confirmar Reserva"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

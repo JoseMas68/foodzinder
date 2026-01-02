@@ -444,6 +444,7 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
                         lastName: currentUser.lastName,
                         email: currentUser.email,
                       } : null}
+                      openingHours={restaurant.openingHours}
                     />
                   </div>
 

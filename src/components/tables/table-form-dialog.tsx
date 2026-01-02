@@ -60,10 +60,10 @@ interface TableFormDialogProps {
 }
 
 const shapeOptions = [
-  { value: "SQUARE", label: "⬜ Cuadrada" },
-  { value: "RECTANGLE", label: "▭ Rectangular" },
-  { value: "ROUND", label: "⭕ Redonda" },
-  { value: "BOOTH", label: "🪑 Reservado" },
+  { value: "SQUARE", label: "Cuadrada" },
+  { value: "RECTANGLE", label: "Rectangular" },
+  { value: "ROUND", label: "Redonda" },
+  { value: "BOOTH", label: "Reservado" },
 ];
 
 const areaOptions = [
@@ -112,7 +112,8 @@ export function TableFormDialog({
           isEditing ? "Mesa actualizada correctamente" : "Mesa creada correctamente"
         );
         form.reset();
-        onSuccess();
+        onOpenChange(false); // Cerrar el diálogo primero
+        onSuccess(); // Luego recargar
       } else {
         toast.error(result.error || "Error al guardar la mesa");
       }
@@ -220,14 +221,17 @@ export function TableFormDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Área / Zona (Opcional)</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={(value) => field.onChange(value === "_none_" ? "" : value)}
+                    defaultValue={field.value || "_none_"}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Selecciona o deja vacío" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Sin área específica</SelectItem>
+                      <SelectItem value="_none_">Sin área específica</SelectItem>
                       {areaOptions.map((area) => (
                         <SelectItem key={area} value={area}>
                           {area}

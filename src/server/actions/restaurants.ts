@@ -29,7 +29,15 @@ export async function createRestaurant(formData: any) {
     }
 
     // Separar datos de relaciones
-    const { cuisineTypeIds, openingHours, ...restaurantData } = validated;
+    const { cuisineTypeIds, featureIds, dietaryIds, ambianceIds, openingHours, ...restaurantData } = validated;
+
+    // Combinar todas las taxonomías
+    const allTaxonomyIds = [
+      ...(cuisineTypeIds || []),
+      ...(featureIds || []),
+      ...(dietaryIds || []),
+      ...(ambianceIds || []),
+    ];
 
     const restaurant = await prisma.restaurant.create({
       data: {
@@ -44,9 +52,9 @@ export async function createRestaurant(formData: any) {
           },
         }),
         // Conectar taxonomías si se proporcionaron
-        ...(cuisineTypeIds && cuisineTypeIds.length > 0 && {
+        ...(allTaxonomyIds.length > 0 && {
           taxonomies: {
-            create: cuisineTypeIds.map(taxonomyId => ({
+            create: allTaxonomyIds.map(taxonomyId => ({
               taxonomyId,
             })),
           },
@@ -90,7 +98,7 @@ export async function updateRestaurant(id: string, formData: any) {
     const validated = restaurantUpdateSchema.parse(formData);
 
     // Separar datos de relaciones
-    const { cuisineTypeIds, openingHours, ...restaurantData } = validated;
+    const { cuisineTypeIds, featureIds, dietaryIds, ambianceIds, openingHours, ...restaurantData } = validated;
 
     // Actualizar restaurante y sus relaciones
     const restaurant = await prisma.restaurant.update({
@@ -116,15 +124,23 @@ export async function updateRestaurant(id: string, formData: any) {
     }
 
     // Actualizar taxonomías si se proporcionaron
-    if (cuisineTypeIds !== undefined) {
+    if (cuisineTypeIds !== undefined || featureIds !== undefined || dietaryIds !== undefined || ambianceIds !== undefined) {
+      // Combinar todas las taxonomías
+      const allTaxonomyIds = [
+        ...(cuisineTypeIds || []),
+        ...(featureIds || []),
+        ...(dietaryIds || []),
+        ...(ambianceIds || []),
+      ];
+
       // Eliminar taxonomías existentes
       await prisma.restaurantTaxonomy.deleteMany({
         where: { restaurantId: id },
       });
       // Crear nuevas taxonomías
-      if (cuisineTypeIds.length > 0) {
+      if (allTaxonomyIds.length > 0) {
         await prisma.restaurantTaxonomy.createMany({
-          data: cuisineTypeIds.map(taxonomyId => ({
+          data: allTaxonomyIds.map(taxonomyId => ({
             restaurantId: id,
             taxonomyId,
           })),

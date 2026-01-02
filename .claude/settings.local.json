@@ -26,7 +26,10 @@
       "Bash(npx prisma generate)",
       "Bash(timeout:*)",
       "Bash(tasklist:*)",
-      "Bash(findstr:*)"
+      "Bash(findstr:*)",
+      "Bash(del \"c:\\\\Users\\\\Jose\\\\foodzinder-web\\\\src\\\\components\\\\dashboard\\\\page-builder\\\\hero-image-upload.tsx\")",
+      "Bash(del \"src\\\\components\\\\dashboard\\\\page-builder\\\\hero-image-upload.tsx\")",
+      "Bash(git push:*)"
     ]
   }
 }

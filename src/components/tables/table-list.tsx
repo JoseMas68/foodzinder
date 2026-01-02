@@ -20,6 +20,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Switch } from "@/components/ui/switch";
+import { cn } from "@/lib/utils";
 
 interface Table {
   id: string;
@@ -47,10 +48,10 @@ const shapeLabels = {
 };
 
 const shapeIcons = {
-  SQUARE: "⬜",
-  RECTANGLE: "▭",
-  ROUND: "⭕",
-  BOOTH: "🪑",
+  SQUARE: "◼",
+  RECTANGLE: "▬",
+  ROUND: "●",
+  BOOTH: "▣",
 };
 
 export function TableList({ restaurantId, initialTables }: TableListProps) {
@@ -91,10 +92,12 @@ export function TableList({ restaurantId, initialTables }: TableListProps) {
     }
   };
 
-  const handleSuccess = () => {
-    router.refresh();
-    setIsCreateOpen(false);
-    setEditingTable(null);
+  const handleSuccess = async () => {
+    // Recargar las mesas desde el servidor
+    await router.refresh();
+
+    // Forzar actualización del componente
+    window.location.reload();
   };
 
   // Agrupar mesas por área
@@ -119,7 +122,7 @@ export function TableList({ restaurantId, initialTables }: TableListProps) {
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           {tables.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <Users className="h-12 w-12 mx-auto mb-3 text-gray-300" />
@@ -140,11 +143,12 @@ export function TableList({ restaurantId, initialTables }: TableListProps) {
                     <MapPin className="h-5 w-5 text-primary" />
                     {area}
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: '1rem', width: '100%' }}>
                     {areaTables.map((table) => (
                       <Card
                         key={table.id}
                         className={!table.isActive ? "opacity-60" : ""}
+                        style={{ minWidth: 0 }}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between mb-3">

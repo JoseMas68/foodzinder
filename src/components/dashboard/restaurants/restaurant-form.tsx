@@ -23,20 +23,29 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Image as ImageIcon, Clock, Utensils } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Loader2, Image as ImageIcon, Clock, Info } from 'lucide-react'
 import { useState } from 'react'
 import { ImageUpload } from '@/components/ui/image-upload'
 import { OpeningHoursInput } from './opening-hours-input'
 import { CuisineTypeSelector } from './cuisine-type-selector'
+import { TaxonomySelector } from './taxonomy-selector'
+import { Utensils, Sparkles, Leaf, Heart } from 'lucide-react'
 
 interface RestaurantFormProps {
   initialData?: Partial<RestaurantCreate> & {
     id?: string
     cuisineTypeIds?: string[]
+    featureIds?: string[]
+    dietaryIds?: string[]
+    ambianceIds?: string[]
   }
   onSubmit: (data: RestaurantCreate) => Promise<{ success: boolean; error?: string }>
   isEditing?: boolean
-  cuisineTypes: Array<{ id: string; name: string; slug: string }>
+  cuisineTypes: Array<{ id: string; name: string; slug: string; type: string }>
+  features: Array<{ id: string; name: string; slug: string; type: string }>
+  dietary: Array<{ id: string; name: string; slug: string; type: string }>
+  ambiances: Array<{ id: string; name: string; slug: string; type: string }>
 }
 
 const priceRangeLabels = {
@@ -46,7 +55,7 @@ const priceRangeLabels = {
   LUXURY: 'Lujo (€€€€)',
 }
 
-export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisineTypes }: RestaurantFormProps) {
+export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisineTypes, features, dietary, ambiances }: RestaurantFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const form = useForm<RestaurantCreate>({
@@ -63,6 +72,9 @@ export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisi
       logoUrl: initialData?.logoUrl || '',
       coverUrl: initialData?.coverUrl || '',
       cuisineTypeIds: initialData?.cuisineTypeIds || [],
+      featureIds: initialData?.featureIds || [],
+      dietaryIds: initialData?.dietaryIds || [],
+      ambianceIds: initialData?.ambianceIds || [],
       openingHours: initialData?.openingHours || [],
     },
   })
@@ -85,308 +97,405 @@ export function RestaurantForm({ initialData, onSubmit, isEditing = false, cuisi
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {/* Imágenes */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ImageIcon className="h-5 w-5" />
-              Imágenes del Restaurante
-            </CardTitle>
-            <CardDescription>
-              Sube un logo y una imagen de portada para tu restaurante
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <FormField
-              control={form.control}
-              name="logoUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Logo del Restaurante</FormLabel>
-                  <FormControl>
-                    <ImageUpload
-                      value={field.value}
-                      onChange={field.onChange}
-                      onRemove={() => field.onChange('')}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Imagen cuadrada recomendada (mín. 400x400px)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="coverUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Imagen de Portada</FormLabel>
-                  <FormControl>
-                    <ImageUpload
-                      value={field.value}
-                      onChange={field.onChange}
-                      onRemove={() => field.onChange('')}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Imagen panorámica recomendada (mín. 1200x600px)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Información Básica */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Información Básica</CardTitle>
-            <CardDescription>
-              Datos principales de tu restaurante
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombre del Restaurante</FormLabel>
-                  <FormControl>
-                    <Input placeholder="La Bella Italia" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Descripción</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Describe tu restaurante, especialidades, ambiente..."
-                      className="min-h-32 resize-none"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Mínimo 10 caracteres. Cuenta a tus clientes qué hace especial a tu restaurante.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="priceRange"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Rango de Precios</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un rango" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {Object.entries(priceRangeLabels).map(([value, label]) => (
-                        <SelectItem key={value} value={value}>
-                          {label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Tipo de Cocina */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Utensils className="h-5 w-5" />
-              Tipo de Cocina
-            </CardTitle>
-            <CardDescription>
-              Selecciona los tipos de cocina que ofrece tu restaurante
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="cuisineTypeIds"
-              render={({ field }) => (
-                <FormItem>
-                  <FormControl>
-                    <CuisineTypeSelector
-                      value={field.value}
-                      onChange={field.onChange}
-                      taxonomies={cuisineTypes}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Ubicación */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Ubicación</CardTitle>
-            <CardDescription>
-              Dirección y coordenadas de tu restaurante
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Dirección Completa</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Calle Mayor, 123, Madrid" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="latitude"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Latitud (opcional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="any"
-                        placeholder="40.416775"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="longitude"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Longitud (opcional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="any"
-                        placeholder="-3.703790"
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
-                        value={field.value || ''}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <FormDescription>
-              Las coordenadas ayudan a mostrar tu restaurante en el mapa. Puedes obtenerlas desde Google Maps.
-            </FormDescription>
-          </CardContent>
-        </Card>
-
-        {/* Horarios de Apertura */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+        <Tabs defaultValue="info" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg h-auto">
+            <TabsTrigger
+              value="info"
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-md text-gray-600 font-medium transition-all data-[state=active]:bg-pink-500 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:hover:bg-gray-200"
+            >
+              <Info className="h-5 w-5" />
+              <span className="hidden sm:inline">Información General</span>
+              <span className="sm:hidden">Info</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="schedule"
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-md text-gray-600 font-medium transition-all data-[state=active]:bg-pink-500 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:hover:bg-gray-200"
+            >
               <Clock className="h-5 w-5" />
-              Horarios de Apertura
-            </CardTitle>
-            <CardDescription>
-              Configura los horarios de tu restaurante para cada día de la semana
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+              <span>Horarios</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="media"
+              className="flex items-center justify-center gap-2 px-4 py-3 rounded-md text-gray-600 font-medium transition-all data-[state=active]:bg-pink-500 data-[state=active]:text-white data-[state=active]:shadow-sm data-[state=inactive]:hover:bg-gray-200"
+            >
+              <ImageIcon className="h-5 w-5" />
+              <span>Imágenes</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Tab 1: Información General */}
+          <TabsContent value="info" className="space-y-6 mt-6">
+            {/* Información Básica */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Información Básica</CardTitle>
+                <CardDescription>
+                  Datos principales de tu restaurante
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre del Restaurante</FormLabel>
+                      <FormControl>
+                        <Input placeholder="La Bella Italia" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Descripción</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Describe tu restaurante, especialidades, ambiente..."
+                          className="min-h-32 resize-none"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Mínimo 10 caracteres. Cuenta a tus clientes qué hace especial a tu restaurante.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="priceRange"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Rango de Precios</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecciona un rango" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {Object.entries(priceRangeLabels).map(([value, label]) => (
+                            <SelectItem key={value} value={value}>
+                              {label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Ubicación */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Ubicación</CardTitle>
+                <CardDescription>
+                  Dirección y coordenadas de tu restaurante
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Dirección Completa</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Calle Mayor, 123, Madrid" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="latitude"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Latitud (opcional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="any"
+                            placeholder="40.416775"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                            value={field.value || ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="longitude"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Longitud (opcional)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="any"
+                            placeholder="-3.703790"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : undefined)}
+                            value={field.value || ''}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormDescription>
+                  Las coordenadas ayudan a mostrar tu restaurante en el mapa. Puedes obtenerlas desde Google Maps.
+                </FormDescription>
+              </CardContent>
+            </Card>
+
+            {/* Información de Contacto */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Información de Contacto</CardTitle>
+                <CardDescription>
+                  Datos de contacto para tus clientes
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Teléfono (opcional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="+34 912 345 678" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="website"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Sitio Web (opcional)</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="url"
+                          placeholder="https://www.mirestaurante.com"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Tipo de Cocina */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Utensils className="h-5 w-5" />
+                  Tipo de Cocina
+                </CardTitle>
+                <CardDescription>
+                  Selecciona los tipos de cocina que ofrece tu restaurante
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="cuisineTypeIds"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <CuisineTypeSelector
+                          value={field.value}
+                          onChange={field.onChange}
+                          taxonomies={cuisineTypes}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            {/* Características del Restaurante */}
             <FormField
               control={form.control}
-              name="openingHours"
+              name="featureIds"
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <OpeningHoursInput
+                    <TaxonomySelector
                       value={field.value}
                       onChange={field.onChange}
+                      taxonomies={features}
+                      title="Características del Restaurante"
+                      description="Servicios y facilidades disponibles"
+                      icon={<Sparkles className="h-5 w-5" />}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          </CardContent>
-        </Card>
 
-        {/* Información de Contacto */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Información de Contacto</CardTitle>
-            <CardDescription>
-              Datos de contacto para tus clientes
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
+            {/* Opciones Dietéticas */}
             <FormField
               control={form.control}
-              name="phone"
+              name="dietaryIds"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Teléfono (opcional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="+34 912 345 678" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sitio Web (opcional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="url"
-                      placeholder="https://www.mirestaurante.com"
-                      {...field}
+                    <TaxonomySelector
+                      value={field.value}
+                      onChange={field.onChange}
+                      taxonomies={dietary}
+                      title="Opciones Dietéticas"
+                      description="Opciones especiales de alimentación que ofreces"
+                      icon={<Leaf className="h-5 w-5" />}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-          </CardContent>
-        </Card>
+
+            {/* Ambiente */}
+            <FormField
+              control={form.control}
+              name="ambianceIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormControl>
+                    <TaxonomySelector
+                      value={field.value}
+                      onChange={field.onChange}
+                      taxonomies={ambiances}
+                      title="Ambiente"
+                      description="Describe el ambiente y estilo de tu restaurante"
+                      icon={<Heart className="h-5 w-5" />}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </TabsContent>
+
+          {/* Tab 2: Horarios */}
+          <TabsContent value="schedule" className="space-y-6 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Horarios de Apertura
+                </CardTitle>
+                <CardDescription>
+                  Configura los horarios de tu restaurante para cada día de la semana
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FormField
+                  control={form.control}
+                  name="openingHours"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <OpeningHoursInput
+                          value={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Tab 3: Imágenes */}
+          <TabsContent value="media" className="space-y-6 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="h-5 w-5" />
+                  Imágenes del Restaurante
+                </CardTitle>
+                <CardDescription>
+                  Sube un logo y una imagen de portada para tu restaurante
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="logoUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Logo del Restaurante</FormLabel>
+                      <FormControl>
+                        <ImageUpload
+                          value={field.value}
+                          onChange={field.onChange}
+                          onRemove={() => field.onChange('')}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Imagen cuadrada recomendada (mín. 400x400px)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="coverUrl"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Imagen de Portada</FormLabel>
+                      <FormControl>
+                        <ImageUpload
+                          value={field.value}
+                          onChange={field.onChange}
+                          onRemove={() => field.onChange('')}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Imagen panorámica recomendada (mín. 1200x600px)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
 
         {/* Error General */}
         {form.formState.errors.root && (

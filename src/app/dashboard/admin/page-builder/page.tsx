@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +14,7 @@ import {
   Save,
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
+import { SectionDialog } from "@/components/dashboard/page-builder/section-dialog";
 
 interface PageSection {
   id: string;
@@ -30,6 +30,8 @@ export default function PageBuilderPage() {
   const [sections, setSections] = useState<PageSection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingSection, setEditingSection] = useState<PageSection | undefined>(undefined);
 
   useEffect(() => {
     fetchSections();
@@ -39,9 +41,16 @@ export default function PageBuilderPage() {
     try {
       const response = await fetch("/api/admin/page-sections");
       const data = await response.json();
-      setSections(data);
+      // Asegurar que data sea un array
+      if (Array.isArray(data)) {
+        setSections(data);
+      } else {
+        console.error("API did not return an array:", data);
+        setSections([]);
+      }
     } catch (error) {
       console.error("Error fetching sections:", error);
+      setSections([]);
     } finally {
       setIsLoading(false);
     }
@@ -115,6 +124,50 @@ export default function PageBuilderPage() {
     }
   };
 
+  const openCreateDialog = () => {
+    setEditingSection(undefined);
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (section: PageSection) => {
+    setEditingSection(section);
+    setIsDialogOpen(true);
+  };
+
+  const handleSaveSection = async (data: any) => {
+    if (editingSection) {
+      // Editar sección existente
+      const response = await fetch(`/api/admin/page-sections/${editingSection.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      if (response.ok) {
+        const updated = await response.json();
+        setSections((prev) =>
+          prev.map((s) => (s.id === updated.id ? updated : s))
+        );
+      }
+    } else {
+      // Crear nueva sección
+      const response = await fetch("/api/admin/page-sections", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          order: sections.length,
+          isActive: true,
+        }),
+      });
+
+      if (response.ok) {
+        const newSection = await response.json();
+        setSections((prev) => [...prev, newSection]);
+      }
+    }
+  };
+
   const getSectionTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
       HERO: "Hero",
@@ -129,17 +182,14 @@ export default function PageBuilderPage() {
 
   if (isLoading) {
     return (
-      <DashboardLayout>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <p className="text-muted-foreground">Cargando...</p>
-        </div>
-      </DashboardLayout>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-muted-foreground">Cargando...</p>
+      </div>
     );
   }
 
   return (
-    <DashboardLayout>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-heading font-bold">Page Builder</h1>
@@ -148,7 +198,7 @@ export default function PageBuilderPage() {
             </p>
           </div>
           <div className="flex gap-3">
-            <Button variant="outline" disabled>
+            <Button variant="outline" onClick={openCreateDialog}>
               <Plus className="h-4 w-4 mr-2" />
               Añadir sección
             </Button>
@@ -245,7 +295,7 @@ export default function PageBuilderPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                disabled
+                                onClick={() => openEditDialog(section)}
                               >
                                 <Pencil className="h-4 w-4" />
                               </Button>
@@ -272,7 +322,7 @@ export default function PageBuilderPage() {
                 <p className="text-muted-foreground mb-4">
                   No hay secciones configuradas
                 </p>
-                <Button variant="outline" disabled>
+                <Button variant="outline" onClick={openCreateDialog}>
                   <Plus className="h-4 w-4 mr-2" />
                   Crear primera sección
                 </Button>
@@ -280,7 +330,13 @@ export default function PageBuilderPage() {
             )}
           </CardContent>
         </Card>
-      </div>
-    </DashboardLayout>
+
+        <SectionDialog
+          open={isDialogOpen}
+          onOpenChange={setIsDialogOpen}
+          section={editingSection}
+          onSave={handleSaveSection}
+        />
+    </div>
   );
 }
