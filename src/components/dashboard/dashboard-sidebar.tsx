@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Building2, Home, PlusCircle, Settings, UtensilsCrossed, Star, Heart, Layout, ShieldCheck, Calendar, ClipboardList } from 'lucide-react'
+import { Building2, Home, PlusCircle, Settings, UtensilsCrossed, Star, Heart, Layout, ShieldCheck, Calendar, ClipboardList, Mail } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 
 // Navegación común para todos los usuarios
@@ -80,6 +80,12 @@ const adminNavigation = [
     name: 'Page Builder',
     href: '/dashboard/admin/page-builder',
     icon: Layout,
+    adminOnly: true,
+  },
+  {
+    name: 'Plantillas de Email',
+    href: '/dashboard/admin/email-templates',
+    icon: Mail,
     adminOnly: true,
   },
 ]

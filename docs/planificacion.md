@@ -193,6 +193,17 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
     - [x] Email de notificación al owner cuando recibe nueva reserva
     - [x] Envíos asíncronos (no bloquean la respuesta al usuario)
     - [x] Manejo de errores con logging
+  - [x] **Sistema de Gestión de Plantillas de Email ✅ COMPLETADO**:
+    - [x] Modelo EmailTemplate en base de datos con tipos predefinidos
+    - [x] Dashboard admin para gestionar plantillas (/dashboard/admin/email-templates)
+    - [x] Editor drag & drop visual con react-email-editor (Unlayer)
+    - [x] Sistema de variables dinámicas ({{customerName}}, {{restaurantName}}, etc.)
+    - [x] Merge tags en el editor para facilitar inserción de variables
+    - [x] Condicionales en templates ({{#if variable}}...{{/if}})
+    - [x] Activación/desactivación de plantillas
+    - [x] Templates por defecto seeded en la BD
+    - [x] Locale en español (es-ES) en el editor
+    - [x] Server actions CRUD para gestión de templates
   - [ ] **Fase 4: WebSockets / Tiempo Real** (FUTURO - OPCIONAL):
     - [ ] Actualización en tiempo real de disponibilidad
     - [ ] Bloqueo temporal durante proceso de reserva

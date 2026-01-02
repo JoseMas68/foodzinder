@@ -653,6 +653,44 @@ enum SectionType {
 }
 
 // ============================================================================
+// Email Templates (Gestión de plantillas de email)
+// ============================================================================
+
+model EmailTemplate {
+  id String @id @default(uuid())
+
+  // Template identification
+  type        EmailTemplateType @unique
+  name        String
+  description String?
+  subject     String
+
+  // Template content (HTML con variables)
+  htmlContent String @db.Text
+
+  // Variables disponibles para este template (JSON)
+  variables Json // Ej: ["customerName", "restaurantName", "date", "time"]
+
+  // Metadata
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@index([isActive])
+}
+
+enum EmailTemplateType {
+  BOOKING_CONFIRMATION
+  BOOKING_CANCELLED
+  OWNER_NEW_BOOKING
+  BOOKING_REMINDER
+  PASSWORD_RESET
+  WELCOME_EMAIL
+}
+
+// ============================================================================
 // Audit Log (Optional)
 // ============================================================================
 
