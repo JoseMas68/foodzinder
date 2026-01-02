@@ -184,7 +184,15 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
     - [x] Selector en filtros: "Más próximas primero" / "Más lejanas primero"
     - [x] Por defecto muestra próximas primero (ascendente)
     - [x] Integrado con sistema de filtros existente
-  - [ ] Sistema de notificaciones por email
+  - [x] **Sistema de Notificaciones por Email ✅ COMPLETADO**:
+    - [x] Integración con Resend para envío de emails
+    - [x] Templates HTML responsive (BookingConfirmation, BookingCancelled, OwnerNewBooking)
+    - [x] Email de confirmación al cliente al crear reserva
+    - [x] Email de confirmación cuando owner confirma reserva (incluye mesa asignada)
+    - [x] Email de cancelación al cliente
+    - [x] Email de notificación al owner cuando recibe nueva reserva
+    - [x] Envíos asíncronos (no bloquean la respuesta al usuario)
+    - [x] Manejo de errores con logging
   - [ ] **Fase 4: WebSockets / Tiempo Real** (FUTURO - OPCIONAL):
     - [ ] Actualización en tiempo real de disponibilidad
     - [ ] Bloqueo temporal durante proceso de reserva

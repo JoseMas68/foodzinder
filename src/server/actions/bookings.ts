@@ -5,6 +5,11 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { bookingCreateSchema, bookingUpdateSchema } from "@/lib/validations";
 import { getCurrentUser } from "@/lib/auth/roles";
+import {
+  sendBookingConfirmationEmail,
+  sendBookingCancelledEmail,
+  sendOwnerNewBookingEmail,
+} from "@/lib/email/booking-emails";
 
 /**
  * Crear una nueva reserva
@@ -21,7 +26,20 @@ export async function createBooking(formData: any) {
     // Verificar que el restaurante existe y está APPROVED
     const restaurant = await prisma.restaurant.findUnique({
       where: { id: validated.restaurantId },
-      select: { id: true, status: true, name: true },
+      select: {
+        id: true,
+        status: true,
+        name: true,
+        address: true,
+        ownerId: true,
+        owner: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+      },
     });
 
     if (!restaurant) {
@@ -63,6 +81,47 @@ export async function createBooking(formData: any) {
       },
     });
 
+    // Enviar email de confirmación al cliente (no esperar por el resultado)
+    const customerEmail = currentUser?.email || validated.customerEmail;
+    const customerName = currentUser
+      ? `${currentUser.firstName} ${currentUser.lastName}`
+      : validated.customerName;
+
+    if (customerEmail) {
+      sendBookingConfirmationEmail({
+        to: customerEmail,
+        customerName,
+        restaurantName: restaurant.name,
+        restaurantAddress: restaurant.address || "",
+        date: new Date(validated.date),
+        time: validated.time,
+        partySize: validated.partySize,
+        specialNotes: validated.specialNotes,
+      }).catch((error) => {
+        console.error("Error sending customer confirmation email:", error);
+      });
+    }
+
+    // Enviar email al owner del restaurante
+    if (restaurant.owner?.email) {
+      const ownerName = `${restaurant.owner.firstName} ${restaurant.owner.lastName}`;
+      sendOwnerNewBookingEmail({
+        to: restaurant.owner.email,
+        ownerName,
+        restaurantName: restaurant.name,
+        customerName,
+        customerEmail: customerEmail || "",
+        customerPhone: validated.customerPhone,
+        date: new Date(validated.date),
+        time: validated.time,
+        partySize: validated.partySize,
+        specialNotes: validated.specialNotes,
+        bookingId: booking.id,
+      }).catch((error) => {
+        console.error("Error sending owner notification email:", error);
+      });
+    }
+
     revalidatePath(`/restaurants/${restaurant.id}`);
     revalidatePath("/dashboard/bookings");
 
@@ -89,7 +148,24 @@ export async function updateBooking(id: string, formData: any) {
       where: { id },
       include: {
         restaurant: {
-          select: { ownerId: true },
+          select: {
+            ownerId: true,
+            name: true,
+            address: true,
+          },
+        },
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        table: {
+          select: {
+            tableNumber: true,
+            area: true,
+          },
         },
       },
     });
@@ -118,7 +194,40 @@ export async function updateBooking(id: string, formData: any) {
         ...(validated.specialNotes !== undefined && { specialNotes: validated.specialNotes }),
         ...(validated.status && { status: validated.status }),
       },
+      include: {
+        table: {
+          select: {
+            tableNumber: true,
+            area: true,
+          },
+        },
+      },
     });
+
+    // Si el estado cambia a CONFIRMED, enviar email de confirmación
+    if (validated.status === "CONFIRMED" && existingBooking.status !== "CONFIRMED") {
+      const customerEmail = existingBooking.user?.email || existingBooking.customerEmail;
+      const customerName = existingBooking.user
+        ? `${existingBooking.user.firstName} ${existingBooking.user.lastName}`
+        : existingBooking.customerName;
+
+      if (customerEmail) {
+        sendBookingConfirmationEmail({
+          to: customerEmail,
+          customerName,
+          restaurantName: existingBooking.restaurant.name,
+          restaurantAddress: existingBooking.restaurant.address || "",
+          date: booking.date,
+          time: booking.time,
+          partySize: booking.partySize,
+          specialNotes: booking.specialNotes,
+          tableNumber: booking.table?.tableNumber?.toString(),
+          tableArea: booking.table?.area,
+        }).catch((error) => {
+          console.error("Error sending confirmation email on status change:", error);
+        });
+      }
+    }
 
     revalidatePath("/dashboard/bookings");
     revalidatePath("/dashboard/restaurants");
@@ -145,8 +254,23 @@ export async function cancelBooking(id: string) {
         id: true,
         userId: true,
         status: true,
+        date: true,
+        time: true,
+        partySize: true,
+        customerName: true,
+        customerEmail: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
         restaurant: {
-          select: { ownerId: true },
+          select: {
+            ownerId: true,
+            name: true,
+          },
         },
       },
     });
@@ -170,6 +294,25 @@ export async function cancelBooking(id: string) {
       where: { id },
       data: { status: "CANCELLED" },
     });
+
+    // Enviar email de cancelación al cliente
+    const customerEmail = existingBooking.user?.email || existingBooking.customerEmail;
+    const customerName = existingBooking.user
+      ? `${existingBooking.user.firstName} ${existingBooking.user.lastName}`
+      : existingBooking.customerName;
+
+    if (customerEmail) {
+      sendBookingCancelledEmail({
+        to: customerEmail,
+        customerName,
+        restaurantName: existingBooking.restaurant.name,
+        date: existingBooking.date,
+        time: existingBooking.time,
+        partySize: existingBooking.partySize,
+      }).catch((error) => {
+        console.error("Error sending cancellation email:", error);
+      });
+    }
 
     revalidatePath("/dashboard/bookings");
     revalidatePath("/dashboard/restaurants");
