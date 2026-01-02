@@ -18,7 +18,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { assignTableToBooking, getAvailableTablesForBooking } from "@/server/actions/bookings";
+import { assignTableToBooking, getAvailableTablesForBooking, autoAssignTable } from "@/server/actions/bookings";
 import { toast } from "sonner";
 import { Loader2, Table as TableIcon, Check, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -122,6 +122,19 @@ export function AssignTableSelector({
         setOpen(false);
       } else {
         toast.error(result.error || "Error al desasignar la mesa");
+      }
+    });
+  };
+
+  const handleAutoAssign = () => {
+    startTransition(async () => {
+      const result = await autoAssignTable(bookingId);
+
+      if (result.success) {
+        toast.success(result.message || "Mesa asignada automáticamente");
+        setOpen(false);
+      } else {
+        toast.error(result.error || "Error al asignar mesa automáticamente");
       }
     });
   };
@@ -235,6 +248,17 @@ export function AssignTableSelector({
         </div>
 
         <DialogFooter className="gap-2">
+          {!currentTable && availableTables.length > 0 && (
+            <Button
+              variant="secondary"
+              onClick={handleAutoAssign}
+              disabled={isPending}
+              className="mr-auto"
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Asignar Automáticamente
+            </Button>
+          )}
           {currentTable && (
             <Button
               variant="outline"

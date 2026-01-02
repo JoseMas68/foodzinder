@@ -28,6 +28,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Calendar, Clock, Users, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
+interface BookingService {
+  id: string;
+  name: string;
+  description: string | null;
+  daysOfWeek: number[];
+  slots: Array<{
+    id: string;
+    startTime: string;
+    endTime: string;
+    durationMinutes: number;
+  }>;
+}
+
 interface BookingFormProps {
   restaurantId: string;
   restaurantName: string;
@@ -36,17 +49,13 @@ interface BookingFormProps {
     lastName: string;
     email: string;
   } | null;
-  openingHours?: Array<{
-    dayOfWeek: number;
-    openTime: string | null;
-    closeTime: string | null;
-    isClosed: boolean;
-  }>;
+  services?: BookingService[];
 }
 
-export function BookingForm({ restaurantId, restaurantName, currentUser, openingHours = [] }: BookingFormProps) {
+export function BookingForm({ restaurantId, restaurantName, currentUser, services = [] }: BookingFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState<string>("");
 
   const form = useForm<BookingCreate>({
     resolver: zodResolver(bookingCreateSchema),
@@ -62,46 +71,36 @@ export function BookingForm({ restaurantId, restaurantName, currentUser, opening
     },
   });
 
-  // Generar horarios disponibles (cada 30 minutos)
-  const generateTimeSlots = () => {
-    const slots: string[] = [];
+  // Obtener servicios disponibles para la fecha seleccionada
+  const getAvailableServices = () => {
     const selectedDate = form.watch("date");
-
-    if (!selectedDate) return slots;
+    if (!selectedDate) return [];
 
     const date = new Date(selectedDate);
     const dayOfWeek = date.getDay();
 
-    // Buscar horario de apertura para ese día
-    const daySchedule = openingHours.find(h => h.dayOfWeek === dayOfWeek);
-
-    if (!daySchedule || daySchedule.isClosed || !daySchedule.openTime || !daySchedule.closeTime) {
-      return slots;
-    }
-
-    // Generar slots desde openTime hasta closeTime
-    const [openHour, openMin] = daySchedule.openTime.split(":").map(Number);
-    const [closeHour, closeMin] = daySchedule.closeTime.split(":").map(Number);
-
-    let currentHour = openHour;
-    let currentMin = openMin;
-
-    while (currentHour < closeHour || (currentHour === closeHour && currentMin < closeMin)) {
-      const timeString = `${String(currentHour).padStart(2, "0")}:${String(currentMin).padStart(2, "0")}`;
-      slots.push(timeString);
-
-      // Incrementar 30 minutos
-      currentMin += 30;
-      if (currentMin >= 60) {
-        currentMin = 0;
-        currentHour++;
-      }
-    }
-
-    return slots;
+    // Filtrar servicios que están activos en el día seleccionado
+    return services.filter(service =>
+      service.daysOfWeek.includes(dayOfWeek)
+    );
   };
 
-  const timeSlots = generateTimeSlots();
+  // Obtener turnos del servicio seleccionado
+  const getAvailableSlots = () => {
+    if (!selectedServiceId) return [];
+
+    const service = services.find(s => s.id === selectedServiceId);
+    if (!service) return [];
+
+    return service.slots.map(slot => ({
+      id: slot.id,
+      label: `${slot.startTime} - ${slot.endTime}`,
+      value: slot.startTime,
+    }));
+  };
+
+  const availableServices = getAvailableServices();
+  const availableSlots = getAvailableSlots();
 
   const onSubmit = async (data: BookingCreate) => {
     setIsSubmitting(true);
@@ -171,54 +170,95 @@ export function BookingForm({ restaurantId, restaurantName, currentUser, opening
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Fecha y Hora */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Fecha</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="date"
-                        min={today}
-                        max={maxDateString}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Fecha */}
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Fecha</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      min={today}
+                      max={maxDateString}
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setSelectedServiceId(""); // Reset service cuando cambia la fecha
+                        form.setValue("time", ""); // Reset time
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
+            {/* Servicio */}
+            <div className="space-y-4">
+              <div>
+                <FormLabel>Servicio</FormLabel>
+                <Select
+                  value={selectedServiceId}
+                  onValueChange={(value) => {
+                    setSelectedServiceId(value);
+                    form.setValue("time", ""); // Reset time cuando cambia el servicio
+                  }}
+                  disabled={!form.watch("date") || availableServices.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un servicio" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableServices.length === 0 ? (
+                      <SelectItem value="no-service" disabled>
+                        {form.watch("date") ? "No hay servicios disponibles este día" : "Selecciona una fecha primero"}
+                      </SelectItem>
+                    ) : (
+                      availableServices.map((service) => (
+                        <SelectItem key={service.id} value={service.id}>
+                          <div>
+                            <div className="font-medium">{service.name}</div>
+                            {service.description && (
+                              <div className="text-xs text-muted-foreground">{service.description}</div>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Hora / Turno */}
               <FormField
                 control={form.control}
                 name="time"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Hora</FormLabel>
+                    <FormLabel>Turno</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value}
-                      disabled={!form.watch("date") || timeSlots.length === 0}
+                      disabled={!selectedServiceId || availableSlots.length === 0}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Selecciona una hora" />
+                          <SelectValue placeholder="Selecciona un turno" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {timeSlots.length === 0 ? (
+                        {availableSlots.length === 0 ? (
                           <SelectItem value="no-slots" disabled>
-                            {form.watch("date") ? "Restaurante cerrado este día" : "Selecciona una fecha primero"}
+                            {selectedServiceId ? "No hay turnos disponibles" : "Selecciona un servicio primero"}
                           </SelectItem>
                         ) : (
-                          timeSlots.map((slot) => (
-                            <SelectItem key={slot} value={slot}>
+                          availableSlots.map((slot) => (
+                            <SelectItem key={slot.id} value={slot.value}>
                               <div className="flex items-center gap-2">
                                 <Clock className="h-4 w-4" />
-                                {slot}
+                                {slot.label}
                               </div>
                             </SelectItem>
                           ))

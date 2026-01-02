@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Users, Clock, Phone, Mail, User, MessageSquare, Store } from "lucide-react";
+import { Calendar, Users, Clock, Phone, Mail, User, MessageSquare, Store, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import { BookingStatusSelector } from "@/components/bookings/booking-status-selector";
 import { AssignTableSelector } from "@/components/bookings/assign-table-selector";
@@ -13,27 +13,24 @@ interface PageProps {
   searchParams: Promise<{
     restaurant?: string;
     status?: string;
-    sort?: string;
   }>;
 }
 
-export default async function RestaurantBookingsPage({ searchParams }: PageProps) {
+export default async function AdminBookingsPage({ searchParams }: PageProps) {
   const user = await getCurrentUser();
 
   if (!user) {
     redirect("/sign-in");
   }
 
-  if (user.role !== "OWNER" && user.role !== "ADMIN") {
+  if (user.role !== "ADMIN") {
     redirect("/");
   }
 
   const params = await searchParams;
 
-  // Obtener SOLO los restaurantes del owner (incluso si es ADMIN)
-  // Esta página es para gestionar TUS restaurantes, no todos los de la plataforma
+  // ADMIN ve TODOS los restaurantes de la plataforma
   const restaurants = await prisma.restaurant.findMany({
-    where: { ownerId: user.id },
     select: {
       id: true,
       name: true,
@@ -47,31 +44,19 @@ export default async function RestaurantBookingsPage({ searchParams }: PageProps
   // Filtros
   const selectedRestaurantId = params.restaurant;
   const selectedStatus = params.status;
-  const selectedSort = params.sort || "asc"; // Por defecto: más próximas primero
 
-  // Query de reservas - SIEMPRE filtrar por restaurantes del owner
+  // Query de reservas - ADMIN ve TODAS las reservas
   const whereClause: any = {};
 
   if (selectedRestaurantId) {
-    // Si se selecciona un restaurante específico, verificar que pertenece al owner
-    const ownsRestaurant = restaurants.some(r => r.id === selectedRestaurantId);
-    if (!ownsRestaurant) {
-      // Si no es dueño de este restaurante, no mostrar nada
-      whereClause.restaurantId = "invalid-id";
-    } else {
-      whereClause.restaurantId = selectedRestaurantId;
-    }
-  } else {
-    // Sin filtro de restaurante: mostrar solo los restaurantes del owner
-    whereClause.restaurantId = {
-      in: restaurants.map((r) => r.id),
-    };
+    whereClause.restaurantId = selectedRestaurantId;
   }
 
   if (selectedStatus) {
     whereClause.status = selectedStatus;
   }
 
+  // Limitar a las últimas 50 reservas para mejorar rendimiento
   const bookings = await prisma.booking.findMany({
     where: whereClause,
     include: {
@@ -82,6 +67,13 @@ export default async function RestaurantBookingsPage({ searchParams }: PageProps
           slug: true,
           address: true,
           logoUrl: true,
+          owner: {
+            select: {
+              firstName: true,
+              lastName: true,
+              email: true,
+            },
+          },
         },
       },
       user: {
@@ -103,8 +95,9 @@ export default async function RestaurantBookingsPage({ searchParams }: PageProps
       },
     },
     orderBy: {
-      date: selectedSort === "asc" ? "asc" : "desc",
+      date: "desc",
     },
+    take: 50, // Limitar a 50 resultados
   });
 
   // Separar reservas
@@ -145,9 +138,13 @@ export default async function RestaurantBookingsPage({ searchParams }: PageProps
                     />
                   </div>
                 )}
-                <div>
+                <div className="flex-1">
                   <h3 className="font-bold text-lg">{booking.restaurant.name}</h3>
                   <p className="text-sm text-gray-600">{booking.restaurant.address}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Propietario: {booking.restaurant.owner.firstName} {booking.restaurant.owner.lastName}
+                    {" "}({booking.restaurant.owner.email})
+                  </p>
                 </div>
               </div>
 
@@ -254,11 +251,42 @@ export default async function RestaurantBookingsPage({ searchParams }: PageProps
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-heading font-bold">Gestión de Reservas</h1>
-        <p className="text-gray-500 mt-1">
-          Administra las reservas de tus restaurantes
-        </p>
+      <div className="flex items-center gap-3">
+        <ShieldCheck className="h-8 w-8 text-primary" />
+        <div>
+          <h1 className="text-3xl font-heading font-bold">Administración de Reservas</h1>
+          <p className="text-gray-500 mt-1">
+            Vista global de todas las reservas de la plataforma (últimas 50 reservas)
+          </p>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm text-gray-600">Total Reservas</div>
+            <div className="text-2xl font-bold">{bookings.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm text-gray-600">Pendientes</div>
+            <div className="text-2xl font-bold text-yellow-600">{pendingBookings.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm text-gray-600">Confirmadas</div>
+            <div className="text-2xl font-bold text-green-600">{confirmedBookings.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-sm text-gray-600">Restaurantes</div>
+            <div className="text-2xl font-bold">{restaurants.length}</div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
@@ -338,7 +366,7 @@ export default async function RestaurantBookingsPage({ searchParams }: PageProps
               <Store className="h-12 w-12 mx-auto mb-3 text-gray-300" />
               <p className="font-medium">No hay reservas</p>
               <p className="text-sm mt-1">
-                Las reservas de tus restaurantes aparecerán aquí
+                Las reservas de todos los restaurantes aparecerán aquí
               </p>
             </div>
           </CardContent>

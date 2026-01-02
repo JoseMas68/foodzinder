@@ -113,6 +113,18 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
           },
         },
       },
+      bookingServices: {
+        where: {
+          isActive: true,
+        },
+        include: {
+          slots: {
+            orderBy: {
+              startTime: 'asc',
+            },
+          },
+        },
+      },
     },
   })
 
@@ -444,7 +456,18 @@ export default async function RestaurantPage({ params }: RestaurantPageProps) {
                         lastName: currentUser.lastName,
                         email: currentUser.email,
                       } : null}
-                      openingHours={restaurant.openingHours}
+                      services={restaurant.bookingServices.map(service => ({
+                        id: service.id,
+                        name: service.name,
+                        description: service.description,
+                        daysOfWeek: service.daysOfWeek,
+                        slots: service.slots.map(slot => ({
+                          id: slot.id,
+                          startTime: slot.startTime,
+                          endTime: slot.endTime,
+                          durationMinutes: slot.durationMinutes,
+                        })),
+                      }))}
                     />
                   </div>
 

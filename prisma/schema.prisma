@@ -90,7 +90,8 @@ model Restaurant {
   favorites           Favorite[]
   bookings            Booking[]
   tables              Table[]
-  bookingSlotConfigs  BookingSlotConfig[]
+  bookingServices     BookingService[]
+  bookingReminder     BookingReminder?
   specialEvents       SpecialEvent[]
 
   createdAt DateTime @default(now())
@@ -432,6 +433,7 @@ model Table {
   bookings              Booking[]
   specialEventTables    SpecialEventTable[]
   tableBlockSchedules   TableBlockSchedule[]
+  tableAvailabilities   TableAvailability[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -448,22 +450,89 @@ enum TableShape {
   BOOTH     // Reservado/Booth
 }
 
-// Configuración de turnos/horarios de reserva
-model BookingSlotConfig {
+// ============================================================================
+// Sistema de Servicios y Turnos de Reserva
+// ============================================================================
+
+// Servicio de comida (Desayuno, Comida, Cena, etc.)
+model BookingService {
   id String @id @default(uuid())
 
-  // Configuración de turno
-  slotName     String // Ej: "Almuerzo", "Cena", "Brunch"
-  startTime    String // Format "HH:mm"
-  endTime      String // Format "HH:mm"
-  duration     Int    @default(90) // Duración en minutos
-  maxTables    Int? // Máximo de mesas para este turno (opcional)
-  daysOfWeek   Int[] // Array de días [0-6] donde aplica este turno
-
-  isActive     Boolean @default(true)
+  // Información del servicio
+  name        String // Ej: "Cena", "Comida", "Brunch"
+  description String?
+  daysOfWeek  Int[] // Array de días [0-6] donde está activo este servicio
+  isActive    Boolean @default(true)
 
   // Relations
   restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  slots               BookingSlot[]
+  tableAvailabilities TableAvailability[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([restaurantId])
+  @@index([isActive])
+}
+
+// Turno específico dentro de un servicio
+model BookingSlot {
+  id String @id @default(uuid())
+
+  // Horario del turno
+  startTime       String // Format "HH:mm" - Ej: "20:00"
+  endTime         String // Format "HH:mm" - Ej: "21:30"
+  durationMinutes Int    @default(90) // Duración en minutos
+  maxCapacity     Int? // Capacidad máxima de personas para este turno (opcional)
+
+  // Relations
+  serviceId String
+  service   BookingService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([serviceId])
+}
+
+// Disponibilidad de mesa para un día y servicio específico
+model TableAvailability {
+  id String @id @default(uuid())
+
+  // Fecha y servicio
+  date      DateTime // Solo fecha (sin hora)
+  isAvailable Boolean @default(true) // Si está disponible para reservas
+
+  // Relations
+  tableId String
+  table   Table @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  serviceId String
+  service   BookingService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tableId, date, serviceId])
+  @@index([tableId])
+  @@index([date])
+  @@index([serviceId])
+}
+
+// Configuración de recordatorios para el owner
+model BookingReminder {
+  id String @id @default(uuid())
+
+  // Configuración del recordatorio
+  reminderTime String  @default("10:00") // Hora del recordatorio (HH:mm)
+  isActive     Boolean @default(true)
+  frequency    String  @default("DAILY") // DAILY, WEEKDAYS, WEEKENDS
+
+  // Relations
+  restaurantId String     @unique
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())

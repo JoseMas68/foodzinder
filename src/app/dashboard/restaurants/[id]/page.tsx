@@ -7,7 +7,7 @@ import { RestaurantMenus } from '@/components/dashboard/restaurants/restaurant-m
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
-import { ChevronLeft, ExternalLink, UtensilsCrossed } from 'lucide-react'
+import { ChevronLeft, ExternalLink, UtensilsCrossed, Calendar, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getTaxonomies } from '@/server/queries/restaurants'
@@ -141,6 +141,24 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
               >
                 <UtensilsCrossed className="h-3 w-3" />
                 Gestionar Mesas
+              </Link>
+            </Button>
+            <Button variant="link" size="sm" asChild className="h-auto p-0">
+              <Link
+                href={`/dashboard/restaurants/${id}/services`}
+                className="flex items-center gap-1"
+              >
+                <Clock className="h-3 w-3" />
+                Servicios y Turnos
+              </Link>
+            </Button>
+            <Button variant="link" size="sm" asChild className="h-auto p-0">
+              <Link
+                href={`/dashboard/restaurants/${id}/availability`}
+                className="flex items-center gap-1"
+              >
+                <Calendar className="h-3 w-3" />
+                Disponibilidad
               </Link>
             </Button>
           </div>

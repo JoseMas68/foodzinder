@@ -46,6 +46,7 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
 - [x] CRUD de Restaurantes (Crear, Editar, Listar propios).
 - [x] Formulario con validación (Zod + React Hook Form).
 - [x] Gestión de horarios de apertura.
+- [x] Gestión de mesas con filtros por estado (All/Active/Inactive).
 - [x] Selección de tipos de cocina (taxonomías).
 - [x] **Sistema completo de Taxonomías (58 taxonomías en 4 categorías)**:
   - [x] CUISINE_TYPE (20): Española, Italiana, Japonesa, China, etc.
@@ -72,8 +73,9 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
   - [x] Secciones de carruseles de restaurantes
   - [x] Filtros por taxonomías (40+ opciones)
   - [x] Gestión visual de secciones (crear, editar, reordenar, eliminar)
-- [x] Filtros por tipo de cocina y rango de precios.
+- [x] Filtros por tipo de cocina y rango de precios (euros €).
 - [x] **Filtros avanzados por características, opciones dietéticas y ambiente**.
+- [x] **Filtro de valoración mínima con diseño vertical por checkboxes**.
 - [x] Búsqueda básica de restaurantes.
 - [x] Vista de detalle de Restaurante.
 - [x] Sistema de rating (promedio de reseñas).
@@ -121,12 +123,22 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
     - [x] Información completa de contacto y notas especiales
   - [x] Dashboard "Gestión de Reservas" (owners/admins) con:
     - [x] Vista de todas las reservas de sus restaurantes
-    - [x] Filtros por restaurante y estado
+    - [x] Filtros por restaurante y estado (BookingFilters component)
     - [x] Cambio de estado de reservas (selector dinámico)
     - [x] Asignación manual de mesas con selector inteligente
     - [x] Información completa del cliente
     - [x] Visualización de mesa asignada (número + área)
-  - [x] Navegación en sidebar del dashboard
+  - [x] **Dashboard "Todas las Reservas" (solo ADMIN)**:
+    - [x] Vista global de todas las reservas de la plataforma
+    - [x] Filtros por restaurante y estado
+    - [x] Información del propietario de cada restaurante
+    - [x] Estadísticas del sistema (total, pendientes, confirmadas, restaurantes)
+    - [x] Optimización de rendimiento (límite de 50 reservas)
+  - [x] Navegación en sidebar del dashboard reorganizada por roles:
+    - [x] Sección común (Dashboard, Configuración)
+    - [x] Sección USER (Favoritos, Reseñas, Mis Reservas)
+    - [x] Sección OWNER (Restaurantes, Menús, Gestión de Reservas)
+    - [x] Sección ADMIN (Moderación, Todas las Reservas, Page Builder)
   - [x] **Fase 1: Validación de Disponibilidad de Mesas ✅ COMPLETADO**:
     - [x] Verificación de conflictos de horarios (duración 90min)
     - [x] Validación al crear reserva (bloquea si no hay mesas)
@@ -134,16 +146,44 @@ Este documento describe las fases para el desarrollo de la aplicación web Foodz
     - [x] UI mejorada mostrando mesas disponibles/ocupadas en tiempo real
     - [x] Contador de disponibilidad con badges
     - [x] Agrupación por áreas del restaurante
-  - [ ] **Fase 2: Sistema de Slots de Reserva** (PENDIENTE - MEDIA PRIORIDAD):
-    - [ ] Modelo BookingSlotConfig (ya existe en schema.prisma)
-    - [ ] CRUD de slots para owners (ej: "Almuerzo 13:00-16:00, Lun-Vie")
-    - [ ] Validación de reservas contra slots configurados
-    - [ ] Mostrar solo horarios disponibles según slots activos
-    - [ ] Control de capacidad por slot (max mesas/personas)
-    - Ver detalles en `docs/sistema-reservas-plan.md`
-  - [ ] **Fase 3: Auto-asignación de Mesas** (PENDIENTE - BAJA PRIORIDAD):
-    - [ ] Algoritmo de sugerencia automática de mesa óptima
-    - [ ] Consideración de capacidad y evitar desperdicio
+  - [x] **Fase 2: Sistema de Servicios y Turnos ✅ COMPLETADO** (estilo TheFork):
+    - [x] Modelos de datos:
+      - [x] BookingService (servicios: Cena, Comida, Brunch)
+      - [x] BookingSlot (turnos por servicio con horarios variables)
+      - [x] TableAvailability (control manual de disponibilidad por mesa/fecha/servicio)
+      - [x] BookingReminder (recordatorios diarios configurables)
+    - [x] Backend:
+      - [x] Validaciones Zod completas con UUID
+      - [x] Server actions CRUD para servicios y turnos
+      - [x] Sistema de disponibilidad con 3 niveles de validación:
+        - [x] Capacidad física de la mesa
+        - [x] Disponibilidad manual (TableAvailability)
+        - [x] Conflictos de horario con otras reservas
+    - [x] Dashboard del Owner:
+      - [x] Página de Servicios con listado y creación
+      - [x] Diálogo para crear servicios con múltiples turnos
+      - [x] Configuración de días activos por servicio
+      - [x] Página de Disponibilidad con:
+        - [x] Selector de fecha y servicio
+        - [x] Toggle individual por mesa
+        - [x] Acciones rápidas (todas disponibles/ninguna)
+        - [x] Configuración de recordatorios diarios
+    - [x] Formulario Público de Reservas:
+      - [x] Selección de fecha → servicios disponibles ese día
+      - [x] Selección de servicio → turnos del servicio
+      - [x] Validación automática de capacidad antes de confirmar
+      - [x] Cliente NO selecciona mesa (asignación posterior)
+    - [x] Navegación integrada desde dashboard de restaurante
+  - [x] **Fase 3: Auto-asignación de Mesas ✅ COMPLETADO**:
+    - [x] Función `autoAssignTable()` que asigna mesa óptima
+    - [x] Criterio: mesa más pequeña que pueda acomodar al grupo
+    - [x] Botón "Asignar Automáticamente" en selector de mesas
+    - [x] Solo se muestra cuando no hay mesa asignada
+    - [x] Toast de confirmación con número de mesa asignada
+  - [x] **Ordenamiento de Reservas**:
+    - [x] Selector en filtros: "Más próximas primero" / "Más lejanas primero"
+    - [x] Por defecto muestra próximas primero (ascendente)
+    - [x] Integrado con sistema de filtros existente
   - [ ] Sistema de notificaciones por email
   - [ ] **Fase 4: WebSockets / Tiempo Real** (FUTURO - OPCIONAL):
     - [ ] Actualización en tiempo real de disponibilidad

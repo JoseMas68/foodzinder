@@ -361,6 +361,7 @@ export async function checkTableAvailability(
 
 /**
  * Obtener mesas disponibles para una reserva específica
+ * Considera: capacidad de la mesa, reservas existentes, y disponibilidad manual (TableAvailability)
  */
 export async function getAvailableTablesForBooking(
   restaurantId: string,
@@ -370,7 +371,11 @@ export async function getAvailableTablesForBooking(
   excludeBookingId?: string
 ) {
   try {
-    // Obtener todas las mesas activas del restaurante
+    // Normalizar fecha para comparación
+    const normalizedDate = new Date(date);
+    normalizedDate.setHours(0, 0, 0, 0);
+
+    // Obtener todas las mesas activas del restaurante que pueden acomodar el grupo
     const tables = await prisma.table.findMany({
       where: {
         restaurantId,
@@ -392,19 +397,48 @@ export async function getAvailableTablesForBooking(
       ],
     });
 
+    // Obtener configuración de disponibilidad manual para esta fecha
+    const tableAvailability = await prisma.tableAvailability.findMany({
+      where: {
+        date: normalizedDate,
+      },
+      select: {
+        tableId: true,
+        isAvailable: true,
+      },
+    });
+
+    // Crear mapa de disponibilidad manual
+    const availabilityMap = new Map(
+      tableAvailability.map(ta => [ta.tableId, ta.isAvailable])
+    );
+
     // Verificar disponibilidad de cada mesa
     const availabilityChecks = await Promise.all(
       tables.map(async (table) => {
+        // 1. Verificar si el owner marcó esta mesa como NO disponible manualmente
+        const manualAvailability = availabilityMap.get(table.id);
+        if (manualAvailability === false) {
+          return {
+            ...table,
+            isAvailable: false,
+            reason: "Mesa no disponible para este día (configurado por el restaurante)",
+          };
+        }
+
+        // 2. Verificar conflictos de horario con otras reservas
         const availability = await checkTableAvailability(
           table.id,
           date,
           time,
           excludeBookingId
         );
+
         return {
           ...table,
           isAvailable: availability.available,
           conflictingBooking: availability.conflictingBooking,
+          reason: availability.available ? undefined : "Mesa ya reservada en este horario",
         };
       })
     );
@@ -413,6 +447,93 @@ export async function getAvailableTablesForBooking(
   } catch (error: any) {
     console.error("Error getting available tables:", error);
     return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Asignar automáticamente la mejor mesa disponible para una reserva
+ * Criterio: mesa más pequeña que pueda acomodar al grupo
+ */
+export async function autoAssignTable(bookingId: string) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) throw new Error("No autorizado");
+
+    // Obtener la reserva
+    const booking = await prisma.booking.findUnique({
+      where: { id: bookingId },
+      include: {
+        restaurant: {
+          select: { id: true, ownerId: true },
+        },
+      },
+    });
+
+    if (!booking) {
+      throw new Error("Reserva no encontrada");
+    }
+
+    // Solo el owner del restaurante o un admin pueden asignar automáticamente
+    const canAssign =
+      booking.restaurant.ownerId === user.id || user.role === "ADMIN";
+
+    if (!canAssign) {
+      throw new Error("No tienes permiso para asignar mesas");
+    }
+
+    // Ya tiene mesa asignada
+    if (booking.tableId) {
+      return { success: true, data: booking, message: "La reserva ya tiene mesa asignada" };
+    }
+
+    // Obtener mesas disponibles
+    const availableTables = await getAvailableTablesForBooking(
+      booking.restaurantId,
+      booking.date,
+      booking.time,
+      booking.partySize,
+      bookingId
+    );
+
+    if (!availableTables.success || !availableTables.data) {
+      throw new Error("Error al obtener mesas disponibles");
+    }
+
+    // Filtrar solo mesas disponibles y ordenar por capacidad (menor a mayor)
+    const validTables = availableTables.data
+      .filter((t: any) => t.isAvailable)
+      .sort((a: any, b: any) => a.capacity - b.capacity);
+
+    if (validTables.length === 0) {
+      throw new Error("No hay mesas disponibles para asignar");
+    }
+
+    // Asignar la mesa más pequeña que pueda acomodar al grupo
+    const bestTable = validTables[0];
+
+    const updatedBooking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: { tableId: bestTable.id },
+      include: {
+        table: {
+          select: {
+            tableNumber: true,
+            area: true,
+          },
+        },
+      },
+    });
+
+    revalidatePath("/dashboard/restaurant-bookings");
+
+    return {
+      success: true,
+      data: updatedBooking,
+      message: `Mesa ${bestTable.tableNumber} asignada automáticamente`,
+    };
+  } catch (error: any) {
+    console.error("Error auto-assigning table:", error);
+    return { success: false, error: error.message || "Error al asignar mesa automáticamente" };
   }
 }
 
