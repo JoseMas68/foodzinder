@@ -9,7 +9,7 @@ interface ServiceListProps {
   restaurantId: string;
 }
 
-export function ServiceList({ services, restaurantId }: ServiceListProps) {
+export function ServiceList(_props: ServiceListProps) {
   // This component will be enhanced later with edit/delete dialogs
   // For now, it's just a placeholder
   return null;

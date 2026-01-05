@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { menuSchema } from "@/lib/validations/menu";
 
 // GET /api/menus - List all menus for the authenticated user
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { userId } = await auth();
 

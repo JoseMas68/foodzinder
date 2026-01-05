@@ -1,10 +1,26 @@
 import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RestaurantCard } from "./restaurant-card";
-import { Restaurant } from "@/types";
+import { PriceRange } from "@/types";
+
+type GridRestaurant = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  logoUrl?: string;
+  coverUrl?: string;
+  priceRange: PriceRange;
+  isFavorite?: boolean;
+  distance?: number;
+  stats?: {
+    averageRating: number;
+    reviewCount: number;
+  };
+};
 
 interface RestaurantGridProps {
-  restaurants: Restaurant[];
+  restaurants: GridRestaurant[];
   isAuthenticated?: boolean;
   isLoading?: boolean;
   emptyMessage?: string;
@@ -54,6 +70,7 @@ const RestaurantGridComponent = ({
         <RestaurantCard
           key={restaurant.id}
           restaurant={restaurant}
+          stats={restaurant.stats}
           isAuthenticated={isAuthenticated}
         />
       ))}

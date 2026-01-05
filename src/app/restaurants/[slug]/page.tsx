@@ -14,7 +14,6 @@ import {
   Clock,
   Euro,
   Star,
-  Heart,
   Share2,
   ChevronLeft,
   UtensilsCrossed

@@ -11,7 +11,6 @@ import {
   EyeOff,
   Pencil,
   Trash2,
-  Save,
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { SectionDialog } from "@/components/dashboard/page-builder/section-dialog";

@@ -1,6 +1,6 @@
 'use client'
 
-import { Star, ThumbsUp, Flag, Edit, Trash2 } from "lucide-react";
+import { Star, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -24,11 +24,10 @@ interface Review {
 
 interface ReviewListProps {
   reviews: Review[];
-  currentUserId?: string;
   onEdit?: (review: Review) => void;
 }
 
-export function ReviewList({ reviews, currentUserId, onEdit }: ReviewListProps) {
+export function ReviewList({ reviews, onEdit }: ReviewListProps) {
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
 

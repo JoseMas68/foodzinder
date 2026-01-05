@@ -34,7 +34,7 @@ const DEMO_USERS = {
 }
 
 export function DemoAccess() {
-  const { isLoaded, signIn } = useSignIn()
+  const { isLoaded, signIn, setActive } = useSignIn()
   const [loading, setLoading] = useState<string | null>(null)
 
   const handleDemoLogin = async (userType: keyof typeof DEMO_USERS) => {
@@ -51,8 +51,8 @@ export function DemoAccess() {
       })
 
       // Completar la autenticación si está pendiente
-      if (result.status === 'complete') {
-        await signIn.setActive({ session: result.createdSessionId })
+      if (result.status === 'complete' && setActive) {
+        await setActive({ session: result.createdSessionId })
         window.location.href = '/dashboard'
       }
     } catch (error: any) {

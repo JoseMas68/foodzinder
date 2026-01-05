@@ -141,6 +141,7 @@ export default async function RestaurantsPage({ searchParams }: PageProps) {
 
   const restaurantsWithFavorites = searchResults.hits.map((r) => ({
     ...r,
+    priceRange: r.priceRange as PriceRange,
     stats: {
       averageRating: r.averageRating,
       reviewCount: r.reviewCount,

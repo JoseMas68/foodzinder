@@ -32,6 +32,15 @@ interface AssignTableSelectorProps {
   partySize: number;
 }
 
+type TableAvailability = {
+  id: string;
+  tableNumber: string | number;
+  minCapacity: number;
+  capacity: number;
+  area?: string | null;
+  isAvailable: boolean;
+};
+
 export function AssignTableSelector({
   bookingId,
   currentTableId,
@@ -44,8 +53,8 @@ export function AssignTableSelector({
   const [selectedTableId, setSelectedTableId] = useState<string | null>(currentTableId);
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(false);
-  const [tablesWithAvailability, setTablesWithAvailability] = useState<any[]>([]);
-  const [currentTable, setCurrentTable] = useState<any>(null);
+  const [tablesWithAvailability, setTablesWithAvailability] = useState<TableAvailability[]>([]);
+  const [currentTable, setCurrentTable] = useState<TableAvailability | null>(null);
 
   // Cargar mesas con disponibilidad cuando se abre el diálogo
   useEffect(() => {
@@ -68,7 +77,7 @@ export function AssignTableSelector({
       if (result.success && result.data) {
         setTablesWithAvailability(result.data);
         // Encontrar la mesa actual
-        const current = result.data.find((t: any) => t.id === currentTableId);
+        const current = result.data.find((t: TableAvailability) => t.id === currentTableId) || null;
         setCurrentTable(current);
       } else {
         toast.error("Error al cargar mesas disponibles");
@@ -85,14 +94,14 @@ export function AssignTableSelector({
   const occupiedTables = tablesWithAvailability.filter((t) => !t.isAvailable);
 
   // Agrupar mesas disponibles por área
-  const tablesByArea = availableTables.reduce((acc, table) => {
+  const tablesByArea = availableTables.reduce<Record<string, TableAvailability[]>>((acc, table) => {
     const area = table.area || "Sin área";
     if (!acc[area]) {
       acc[area] = [];
     }
     acc[area].push(table);
     return acc;
-  }, {} as Record<string, any[]>);
+  }, {});
 
   const handleAssign = () => {
     if (!selectedTableId) {

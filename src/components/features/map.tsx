@@ -7,7 +7,6 @@ import L from "leaflet";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MapPin, Star } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 // Fix para iconos de Leaflet en Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -18,7 +17,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-interface Restaurant {
+export interface MapRestaurant {
   id: string;
   name: string;
   slug: string;
@@ -38,7 +37,7 @@ interface Restaurant {
 }
 
 interface RestaurantMapProps {
-  restaurants: Restaurant[];
+  restaurants: MapRestaurant[];
   center?: [number, number];
   zoom?: number;
 }
@@ -76,7 +75,7 @@ export function RestaurantMap({
   zoom = 13,
 }: RestaurantMapProps) {
   const [isListOpen, setIsListOpen] = useState(true);
-  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<MapRestaurant | null>(null);
   const [hoveredRestaurantId, setHoveredRestaurantId] = useState<string | null>(null);
   const [mapCenter, setMapCenter] = useState<[number, number]>(center);
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({});
@@ -85,7 +84,7 @@ export function RestaurantMap({
     (r) => r.latitude && r.longitude
   ), [restaurants]);
 
-  const [visibleRestaurants, setVisibleRestaurants] = useState<Restaurant[]>(restaurantsWithLocation);
+  const [visibleRestaurants, setVisibleRestaurants] = useState<MapRestaurant[]>(restaurantsWithLocation);
 
   // Calculate center based on restaurants if available
   useEffect(() => {
@@ -114,7 +113,7 @@ export function RestaurantMap({
     }
   }, [selectedRestaurant, isListOpen]);
 
-  const handleRestaurantClick = (restaurant: Restaurant) => {
+  const handleRestaurantClick = (restaurant: MapRestaurant) => {
     setSelectedRestaurant(restaurant);
     if (restaurant.latitude && restaurant.longitude) {
       setMapCenter([restaurant.latitude, restaurant.longitude]);

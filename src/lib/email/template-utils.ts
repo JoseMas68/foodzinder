@@ -16,7 +16,7 @@ export function replaceTemplateVariables(
   });
 
   // Manejar condicionales {{#if variable}}...{{/if}}
-  result = result.replace(/{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g, (match, varName, content) => {
+  result = result.replace(/{{#if\s+(\w+)}}([\s\S]*?){{\/if}}/g, (_match, varName, content) => {
     return variables[varName] ? content : "";
   });
 

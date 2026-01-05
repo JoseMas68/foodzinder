@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/roles";
 import { getEmailTemplates } from "@/server/actions/email-templates";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,16 @@ export default async function EmailTemplatesPage() {
   const templates = result.data || [];
 
   const getTemplateIcon = (type: string) => {
-    return "📧";
+    const icons: Record<string, string> = {
+      BOOKING_CONFIRMATION: "✅",
+      BOOKING_CANCELLED: "❌",
+      OWNER_NEW_BOOKING: "👤",
+      BOOKING_REMINDER: "⏰",
+      PASSWORD_RESET: "🔑",
+      WELCOME_EMAIL: "✨",
+    };
+
+    return icons[type] || "📧";
   };
 
   const getTemplateTypeLabel = (type: string) => {

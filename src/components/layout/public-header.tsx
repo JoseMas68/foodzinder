@@ -4,7 +4,6 @@ import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from "@cl
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
-import { Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export function PublicHeader() {

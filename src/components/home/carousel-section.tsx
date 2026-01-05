@@ -196,10 +196,12 @@ export async function CarouselSection({
   const statsMap = await getManyRestaurantStats(restaurants.map((r) => r.id));
 
   // Map restaurants with stats and favorites
-  const restaurantsWithStats = restaurants.map((r) => ({
-    ...r,
-    stats: statsMap[r.id],
-    isFavorite: favoriteIds.has(r.id),
+  const restaurantsWithStats = restaurants.map(({ logoUrl, coverUrl, ...rest }) => ({
+    ...rest,
+    logoUrl: logoUrl ?? undefined,
+    coverUrl: coverUrl ?? undefined,
+    stats: statsMap[rest.id],
+    isFavorite: favoriteIds.has(rest.id),
   }));
 
   return (

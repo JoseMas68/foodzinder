@@ -20,9 +20,9 @@ async function main() {
   // 4. Pégalos aquí abajo:
 
   const CLERK_IDS = {
-    admin: 'user_XXXXXXXXXXXXXXXXX', // Pega aquí el Clerk ID del admin
-    owner: 'user_XXXXXXXXXXXXXXXXX', // Pega aquí el Clerk ID del owner
-    user: 'user_XXXXXXXXXXXXXXXXX',  // Pega aquí el Clerk ID del user
+    admin: 'user_37q0HijW3e073lf3bUn7rsjLdOh', // admin@foodzinder.com
+    owner: 'user_37q0M7O2TIAwm1cSbLeEk5LMeHG', // owner@foodzinder.com
+    user: 'user_37q0PU4xheZ6VJPFNAvSqFBx4kH',  // user@foodzinder.com
   };
 
   // Verificar que se hayan actualizado los IDs

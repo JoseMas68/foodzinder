@@ -1,9 +1,9 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import EmailEditor, { EditorRef, EmailEditorProps } from "react-email-editor";
+import EmailEditor, { EditorRef } from "react-email-editor";
 import { Button } from "@/components/ui/button";
-import { Save, Info, ChevronRight, Copy } from "lucide-react";
+import { Save, Info, Copy } from "lucide-react";
 import { toast } from "sonner";
 import {
   Sheet,

@@ -42,7 +42,7 @@ export default function EditEmailTemplatePage({ params }: PageProps) {
     }
   };
 
-  const handleSave = async (html: string, design: any) => {
+  const handleSave = async (html: string) => {
     try {
       const result = await updateEmailTemplate(resolvedParams.id, {
         htmlContent: html,
