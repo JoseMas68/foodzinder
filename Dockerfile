@@ -11,7 +11,7 @@ COPY package.json package-lock.json* ./
 COPY prisma ./prisma/
 
 # Instalar dependencias con cache layer optimizado
-RUN npm ci --only=production --legacy-peer-deps && \
+RUN npm ci --legacy-peer-deps && \
     npm cache clean --force
 
 # Rebuild del código fuente solo cuando sea necesario
