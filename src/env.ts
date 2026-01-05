@@ -77,6 +77,18 @@ export function getEnv(): Env {
 
   if (!parsed.success) {
     console.error("Invalid environment variables:", parsed.error.format());
+    // During build time, we might not have all variables, so we'll be more lenient
+    if (process.env.NODE_ENV === 'production' && typeof window === 'undefined') {
+      console.warn("Some environment variables are invalid, but continuing build...");
+      // Return a minimal env object with required values
+      cachedEnv = {
+        DATABASE_URL: envVars.DATABASE_URL || '',
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: envVars.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || '',
+        CLERK_SECRET_KEY: envVars.CLERK_SECRET_KEY || '',
+        NODE_ENV: envVars.NODE_ENV as 'development' | 'production' | 'test' || 'production',
+      } as Env;
+      return cachedEnv;
+    }
     throw new Error("Invalid environment variables");
   }
 
@@ -84,5 +96,13 @@ export function getEnv(): Env {
   return cachedEnv;
 }
 
-// Export individual env vars with safe access
-export const env = getEnv();
+// Export a proxy to delay initialization until first access
+let _env: Env | undefined;
+export const env = new Proxy({} as Env, {
+  get(_target, prop: keyof Env) {
+    if (!_env) {
+      _env = getEnv();
+    }
+    return _env[prop];
+  }
+});

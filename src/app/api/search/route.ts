@@ -1,9 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { meilisearch, RESTAURANTS_INDEX } from '@/lib/meilisearch';
+import { RESTAURANTS_INDEX } from '@/lib/meilisearch';
 import { calculateDistance } from '@/lib/distance';
 
+// Force dynamic rendering to avoid env access during build
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
+  // Lazy import to avoid accessing env during build time
+  const { getMeilisearchClient } = await import('@/lib/meilisearch');
+
   try {
+    const meilisearch = getMeilisearchClient();
+
     if (!meilisearch) {
       return NextResponse.json(
         { error: 'Search service not available' },

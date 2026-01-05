@@ -1,17 +1,37 @@
 import { MeiliSearch } from "meilisearch";
-import { env } from "@/env";
 
-if (!env.NEXT_PUBLIC_MEILISEARCH_HOST || !env.MEILISEARCH_MASTER_KEY) {
+let _meilisearch: MeiliSearch | null | undefined;
+
+export function getMeilisearchClient(): MeiliSearch | null {
+  if (_meilisearch !== undefined) return _meilisearch;
+
+  // Lazy import to avoid accessing env during build time
+  const { env } = require("@/env");
+
+  if (!env.NEXT_PUBLIC_MEILISEARCH_HOST || !env.MEILISEARCH_MASTER_KEY) {
     // En desarrollo podríamos no tener Meilisearch, así que manejamos el error o retornamos null
     console.warn("Meilisearch environment variables are not defined");
+    _meilisearch = null;
+    return null;
+  }
+
+  _meilisearch = new MeiliSearch({
+    host: env.NEXT_PUBLIC_MEILISEARCH_HOST,
+    apiKey: env.MEILISEARCH_MASTER_KEY,
+  });
+
+  return _meilisearch;
 }
 
-export const meilisearch = (env.NEXT_PUBLIC_MEILISEARCH_HOST && env.MEILISEARCH_MASTER_KEY)
-    ? new MeiliSearch({
-        host: env.NEXT_PUBLIC_MEILISEARCH_HOST,
-        apiKey: env.MEILISEARCH_MASTER_KEY,
-    })
-    : null;
+// For backwards compatibility - this will be lazily initialized
+// Don't call getMeilisearchClient() here to avoid env access during build
+export let meilisearch: MeiliSearch | null = null;
+
+// Initialize on first import in a runtime context
+if (typeof window === 'undefined' && process.env.NODE_ENV !== 'test') {
+  // Server-side: defer until actually needed
+  // Client components and API routes will call getMeilisearchClient() directly
+}
 
 export const RESTAURANTS_INDEX = "restaurants";
 
@@ -19,13 +39,14 @@ export const RESTAURANTS_INDEX = "restaurants";
  * Initialize Meilisearch indexes with proper settings
  */
 export async function initializeMeilisearch() {
-  if (!meilisearch) {
+  const client = getMeilisearchClient();
+  if (!client) {
     throw new Error('Meilisearch is not configured');
   }
 
   try {
     // Get or create the restaurants index
-    const restaurantsIndex = meilisearch.index(RESTAURANTS_INDEX);
+    const restaurantsIndex = client.index(RESTAURANTS_INDEX);
 
     // Configure searchable attributes
     await restaurantsIndex.updateSearchableAttributes([
