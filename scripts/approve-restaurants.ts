@@ -7,7 +7,7 @@ async function main() {
 
   const result = await prisma.restaurant.updateMany({
     where: {
-      status: RestaurantStatus.PUBLISHED,
+      status: RestaurantStatus.PENDING,
     },
     data: {
       status: RestaurantStatus.APPROVED,
