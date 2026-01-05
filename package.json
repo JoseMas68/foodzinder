@@ -14,6 +14,8 @@
     "db:generate": "prisma generate",
     "db:seed": "tsx scripts/seed.ts",
     "db:studio": "prisma studio",
+    "db:create-test-users": "tsx scripts/create-test-users.ts",
+    "db:update-clerk-ids": "tsx scripts/update-clerk-ids.ts",
     "email:dev": "email dev --dir emails --port 3001"
   },
   "dependencies": {
