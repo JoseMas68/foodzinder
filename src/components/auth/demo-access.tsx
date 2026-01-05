@@ -9,7 +9,7 @@ import { useState } from 'react'
 const DEMO_USERS = {
   admin: {
     email: 'admin@foodzinder.com',
-    password: 'Admin123!',
+    password: 'FoodZ1nd3r@Adm1n2026!',
     role: 'ADMIN',
     icon: Shield,
     color: 'bg-red-500 hover:bg-red-600',
@@ -17,7 +17,7 @@ const DEMO_USERS = {
   },
   owner: {
     email: 'owner@foodzinder.com',
-    password: 'Owner123!',
+    password: 'FoodZ1nd3r@Own3r2026!',
     role: 'OWNER',
     icon: Store,
     color: 'bg-yellow-500 hover:bg-yellow-600',
@@ -25,7 +25,7 @@ const DEMO_USERS = {
   },
   user: {
     email: 'user@foodzinder.com',
-    password: 'User123!',
+    password: 'FoodZ1nd3r@Us3r2026!',
     role: 'USER',
     icon: User,
     color: 'bg-green-500 hover:bg-green-600',
@@ -45,13 +45,16 @@ export function DemoAccess() {
     try {
       const demoUser = DEMO_USERS[userType]
 
-      await signIn.create({
+      const result = await signIn.create({
         identifier: demoUser.email,
         password: demoUser.password,
       })
 
-      // Redirigir al dashboard
-      window.location.href = '/dashboard'
+      // Completar la autenticación si está pendiente
+      if (result.status === 'complete') {
+        await signIn.setActive({ session: result.createdSessionId })
+        window.location.href = '/dashboard'
+      }
     } catch (error: any) {
       console.error('Error en demo login:', error)
       alert(
