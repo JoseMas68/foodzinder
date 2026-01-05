@@ -26,7 +26,7 @@ export async function sendBookingConfirmationEmail(params: SendBookingConfirmati
       day: "numeric",
     });
 
-    const emailHtml = render(
+    const emailHtml = await render(
       BookingConfirmationEmail({
         customerName: params.customerName,
         restaurantName: params.restaurantName,
@@ -78,7 +78,7 @@ export async function sendBookingCancelledEmail(params: SendBookingCancelledPara
       day: "numeric",
     });
 
-    const emailHtml = render(
+    const emailHtml = await render(
       BookingCancelledEmail({
         customerName: params.customerName,
         restaurantName: params.restaurantName,
@@ -131,7 +131,7 @@ export async function sendOwnerNewBookingEmail(params: SendOwnerNewBookingParams
       day: "numeric",
     });
 
-    const emailHtml = render(
+    const emailHtml = await render(
       OwnerNewBookingEmail({
         ownerName: params.ownerName,
         restaurantName: params.restaurantName,

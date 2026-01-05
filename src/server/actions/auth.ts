@@ -1,5 +1,6 @@
 'use server'
 
+import { auth as clerkAuth } from '@clerk/nextjs/server'
 import { prisma } from '@/lib/prisma'
 import { UserRole } from '@prisma/client'
 
@@ -34,4 +35,29 @@ export async function syncUserFromClerk(
 
   console.log('[syncUserFromClerk] User synced:', user.id)
   return user
+}
+
+/**
+ * Get current authenticated user from database
+ */
+export async function getCurrentUser() {
+  const { userId: clerkId } = await clerkAuth()
+
+  if (!clerkId) {
+    return null
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId },
+  })
+
+  return user
+}
+
+/**
+ * Check if current user is admin
+ */
+export async function isAdmin() {
+  const user = await getCurrentUser()
+  return user?.role === UserRole.ADMIN
 }

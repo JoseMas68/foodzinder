@@ -106,7 +106,7 @@ export async function getEmailTemplateByType(
       where: {
         type_restaurantId: {
           type,
-          restaurantId: restaurantId || null,
+          restaurantId: restaurantId || "",
         },
       },
     });

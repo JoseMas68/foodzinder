@@ -34,7 +34,8 @@
       "Bash(del \"c:\\\\Users\\\\Jose\\\\foodzinder-web\\\\docs\\\\COMPONENTS_MANIFEST.json\")",
       "Bash(del \"c:\\\\Users\\\\Jose\\\\foodzinder-web\\\\docs\\\\SHADCN_UI_COMPONENTS.md\")",
       "Bash(del \"c:\\\\Users\\\\Jose\\\\foodzinder-web\\\\docs\\\\IMPLEMENTATION_SUMMARY.md\")",
-      "Bash(del \"c:\\\\Users\\\\Jose\\\\foodzinder-web\\\\docs\\\\scaffold.md\")"
+      "Bash(del \"c:\\\\Users\\\\Jose\\\\foodzinder-web\\\\docs\\\\scaffold.md\")",
+      "Bash(grep:*)"
     ]
   }
 }
