@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
 // Define rutas públicas (accesibles sin autenticación)
 const isPublicRoute = createRouteMatcher([
@@ -11,12 +12,23 @@ const isPublicRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware(async (auth, request) => {
-  // Si la ruta no es pública, requiere autenticación
-  if (!isPublicRoute(request)) {
-    const { userId, redirectToSignIn } = await auth()
-    if (!userId) {
-      return redirectToSignIn()
+  try {
+    // Si la ruta no es pública, requiere autenticación
+    if (!isPublicRoute(request)) {
+      const { userId, redirectToSignIn } = await auth()
+      if (!userId) {
+        return redirectToSignIn()
+      }
     }
+  } catch (error) {
+    // Log error but don't crash the app
+    console.error('Clerk middleware error:', error)
+    // If Clerk is misconfigured, allow public routes to work
+    if (isPublicRoute(request)) {
+      return NextResponse.next()
+    }
+    // For protected routes, redirect to sign-in on error
+    return NextResponse.redirect(new URL('/sign-in', request.url))
   }
 })
 
