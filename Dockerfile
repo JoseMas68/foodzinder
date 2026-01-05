@@ -78,6 +78,9 @@ ENV NODE_ENV production
 # Build de la aplicación Next.js
 RUN npm run build
 
+# Crear directorio public si no existe
+RUN mkdir -p /app/public
+
 # Imagen de producción, copiar todos los archivos y ejecutar next
 FROM base AS runner
 WORKDIR /app
