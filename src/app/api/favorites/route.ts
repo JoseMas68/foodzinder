@@ -150,17 +150,34 @@ export async function GET(request: NextRequest) {
 
     const favorites = await prisma.favorite.findMany({
       where: { userId: user.id },
-      include: {
+      select: {
+        id: true,
+        restaurantId: true,
+        createdAt: true,
         restaurant: {
-          include: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logoUrl: true,
+            coverUrl: true,
+            priceRange: true,
+            address: true,
             taxonomies: {
-              include: {
-                taxonomy: true,
-              },
-            },
-            reviews: {
               select: {
-                rating: true,
+                taxonomy: {
+                  select: {
+                    id: true,
+                    name: true,
+                    type: true,
+                  },
+                },
+              },
+              take: 4,
+            },
+            _count: {
+              select: {
+                reviews: true,
               },
             },
           },
@@ -171,7 +188,52 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(favorites);
+    const restaurantIds = favorites.map((favorite) => favorite.restaurantId);
+
+    const reviewStats = restaurantIds.length
+      ? await prisma.review.groupBy({
+          by: ["restaurantId"],
+          where: {
+            restaurantId: { in: restaurantIds },
+          },
+          _avg: {
+            rating: true,
+          },
+          _count: {
+            rating: true,
+          },
+        })
+      : [];
+
+    const statsMap = new Map(
+      reviewStats.map((stat) => [
+        stat.restaurantId,
+        {
+          averageRating: stat._avg.rating ? Number(stat._avg.rating.toFixed(1)) : 0,
+          reviewCount: stat._count.rating,
+        },
+      ])
+    );
+
+    const payload = favorites.map((favorite) => {
+      const { _count, taxonomies, ...restaurant } = favorite.restaurant;
+      return {
+        id: favorite.id,
+        restaurantId: favorite.restaurantId,
+        createdAt: favorite.createdAt,
+        restaurant: {
+          ...restaurant,
+          taxonomies: taxonomies.map((entry) => entry.taxonomy),
+          stats: {
+            averageRating: statsMap.get(favorite.restaurantId)?.averageRating ?? 0,
+            reviewCount:
+              statsMap.get(favorite.restaurantId)?.reviewCount ?? _count.reviews,
+          },
+        },
+      };
+    });
+
+    return NextResponse.json(payload);
   } catch (error) {
     console.error("Error fetching favorites:", error);
     return NextResponse.json(

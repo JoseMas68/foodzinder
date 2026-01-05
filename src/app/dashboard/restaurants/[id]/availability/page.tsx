@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Calendar, Utensils, AlertCircle } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Utensils, AlertCircle, ArrowLeft } from "lucide-react";
 import { TableAvailabilityManager } from "@/components/booking-services/table-availability-manager";
+import { RestaurantManagementTabs } from "@/components/dashboard/restaurants/restaurant-management-tabs";
+import Link from "next/link";
 
 interface PageProps {
   params: Promise<{
@@ -73,11 +75,21 @@ export default async function TableAvailabilityPage({ params }: PageProps) {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-heading font-bold">Disponibilidad de Mesas</h1>
-        <p className="text-gray-500 mt-1">
-          Gestiona qué mesas están disponibles para reservas en {restaurant.name}
-        </p>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href={`/dashboard/restaurants/${restaurantId}`}>
+              <ArrowLeft className="h-4 w-4" />
+            </Link>
+          </Button>
+          <div>
+            <h1 className="text-3xl font-heading font-bold">Disponibilidad de Mesas</h1>
+            <p className="text-gray-500 mt-1">
+              Gestiona qué mesas están disponibles para reservas en {restaurant.name}
+            </p>
+          </div>
+        </div>
+        <RestaurantManagementTabs restaurantId={restaurantId} activeTab="availability" />
       </div>
 
       {/* Check if services exist */}

@@ -188,13 +188,75 @@ El proyecto utiliza agentes IA especializados para diferentes aspectos:
 
 Consulta [.claude/README.md](.claude/README.md) para más detalles.
 
-## 🚢 Despliegue
+## 🚢 Despliegue a Producción
 
-### Opciones de Hosting
-- **Frontend**: Vercel (recomendado) o VPS
-- **Backend**: Vercel Serverless o VPS con Node.js
-- **Database**: Supabase o PostgreSQL en VPS
-- **Infraestructura**: Easypanel para VPS
+### 🌟 Opción 1: Easypanel (⭐ Recomendado - Más Fácil)
+
+**La forma más rápida de desplegar en tu VPS con interfaz visual.**
+
+Easypanel es un panel de control moderno que hace el deploy súper fácil con clicks.
+
+**Ventajas:**
+- ✅ Interfaz visual amigable (no necesitas terminal)
+- ✅ Deploy automático desde GitHub
+- ✅ SSL automático con Let's Encrypt
+- ✅ Base de datos PostgreSQL con un click
+- ✅ Logs en tiempo real
+- ✅ Backups automáticos
+
+**Guía Completa:** Ver [deploy/EASYPANEL_GUIDE.md](deploy/EASYPANEL_GUIDE.md)
+
+**Quick Start:**
+
+```bash
+# 1. Instalar Easypanel en tu VPS (207.180.203.22)
+ssh root@207.180.203.22
+curl -sSL https://get.easypanel.io | sh
+
+# 2. Abre en tu navegador
+http://207.180.203.22:3000
+
+# 3. Crea tu proyecto y conecta GitHub
+# 4. ¡Listo! Deploy automático configurado
+```
+
+**Variables de entorno:** Ver [deploy/EASYPANEL_ENV.txt](deploy/EASYPANEL_ENV.txt)
+
+---
+
+### 🎯 Opción 2: Docker + GitHub Actions (Avanzado)
+
+**Para usuarios que prefieren control total con CI/CD automatizado.**
+
+Foodzinder está completamente configurado para despliegue automático a VPS usando Docker y GitHub Actions.
+
+**Guía Completa:** Ver [deploy/README.md](deploy/README.md)
+
+**Quick Start:**
+
+```bash
+# 1. En tu VPS, ejecuta el script de configuración
+wget https://raw.githubusercontent.com/TU_USUARIO/foodzinder-web/main/deploy/setup-vps.sh
+sudo bash setup-vps.sh
+
+# 2. Configura GitHub Actions secrets
+# 3. Push a main → Deploy automático
+```
+
+**Características:**
+- ✅ Deploy automático con cada push a `main`
+- ✅ Build optimizado con Docker multi-stage
+- ✅ Nginx como reverse proxy con SSL
+- ✅ PostgreSQL 17 + Meilisearch incluidos
+- ✅ Cache optimizado y compresión gzip
+
+---
+
+### 🌐 Opción 3: Plataformas Cloud (Serverless)
+
+- **Vercel**: Deploy automático desde GitHub
+- **Railway**: Deploy con Docker en un click
+- **Render**: Free tier disponible
 
 ## 📝 Licencia
 

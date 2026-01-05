@@ -4,10 +4,11 @@ import { updateRestaurant } from '@/server/actions/restaurants'
 import { prisma } from '@/lib/prisma'
 import { RestaurantForm } from '@/components/dashboard/restaurants/restaurant-form'
 import { RestaurantMenus } from '@/components/dashboard/restaurants/restaurant-menus'
+import { RestaurantManagementTabs } from '@/components/dashboard/restaurants/restaurant-management-tabs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import Link from 'next/link'
-import { ChevronLeft, ExternalLink, UtensilsCrossed, Calendar, Clock } from 'lucide-react'
+import { ChevronLeft, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { getTaxonomies } from '@/server/queries/restaurants'
@@ -109,60 +110,36 @@ export default async function EditRestaurantPage({ params }: EditRestaurantPageP
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/dashboard/restaurants">
-            <ChevronLeft className="h-5 w-5" />
-          </Link>
-        </Button>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">{restaurant.name}</h1>
-            <Badge variant={status.variant}>{status.label}</Badge>
-          </div>
-          <div className="flex items-center gap-4 mt-1">
-            <p className="text-muted-foreground">
-              Edita la información de tu restaurante
-            </p>
-            <Button variant="link" size="sm" asChild className="h-auto p-0">
-              <Link
-                href={`/restaurants/${restaurant.slug}`}
-                target="_blank"
-                className="flex items-center gap-1"
-              >
-                Ver página pública
-                <ExternalLink className="h-3 w-3" />
-              </Link>
-            </Button>
-            <Button variant="link" size="sm" asChild className="h-auto p-0">
-              <Link
-                href={`/dashboard/restaurants/${id}/tables`}
-                className="flex items-center gap-1"
-              >
-                <UtensilsCrossed className="h-3 w-3" />
-                Gestionar Mesas
-              </Link>
-            </Button>
-            <Button variant="link" size="sm" asChild className="h-auto p-0">
-              <Link
-                href={`/dashboard/restaurants/${id}/services`}
-                className="flex items-center gap-1"
-              >
-                <Clock className="h-3 w-3" />
-                Servicios y Turnos
-              </Link>
-            </Button>
-            <Button variant="link" size="sm" asChild className="h-auto p-0">
-              <Link
-                href={`/dashboard/restaurants/${id}/availability`}
-                className="flex items-center gap-1"
-              >
-                <Calendar className="h-3 w-3" />
-                Disponibilidad
-              </Link>
-            </Button>
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href="/dashboard/restaurants">
+              <ChevronLeft className="h-5 w-5" />
+            </Link>
+          </Button>
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-bold">{restaurant.name}</h1>
+              <Badge variant={status.variant}>{status.label}</Badge>
+            </div>
+            <div className="mt-1 flex flex-wrap items-center gap-4">
+              <p className="text-muted-foreground">
+                Edita la información de tu restaurante
+              </p>
+              <Button variant="link" size="sm" asChild className="h-auto p-0">
+                <Link
+                  href={`/restaurants/${restaurant.slug}`}
+                  target="_blank"
+                  className="flex items-center gap-1"
+                >
+                  Ver página pública
+                  <ExternalLink className="h-3 w-3" />
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
+        <RestaurantManagementTabs restaurantId={id} />
       </div>
 
       {/* Status Info */}

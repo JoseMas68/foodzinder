@@ -57,3 +57,36 @@ Thumbs.db
 
 # TypeScript
 *.tsbuildinfo
+
+# ============================================
+# ARCHIVOS PRIVADOS - NO SUBIR A GITHUB
+# ============================================
+
+# Variables de entorno de producción
+.env.production
+*.env.production
+
+# Archivos de despliegue con información sensible
+deploy/EASYPANEL_ENV.txt
+deploy/EASYPANEL_ENV_READY.txt
+deploy/QUICK_START_207.180.203.22.md
+deploy/CREDENTIALS_GUIDE.md
+
+# Backups de base de datos
+/backups
+*.sql
+*.sql.gz
+
+# Logs de producción
+/logs
+*.log
+
+# Certificados SSL
+/nginx/ssl
+*.pem
+*.key
+*.crt
+
+# Archivos de configuración local
+docker-compose.override.yml
+.env.*.local

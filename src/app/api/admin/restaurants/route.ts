@@ -13,31 +13,54 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
+    const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
+    const limitParam = Number(searchParams.get("limit") ?? "25");
+    const limit = Math.min(Math.max(limitParam, 1), 100);
+    const skip = (page - 1) * limit;
 
-    const restaurants = await prisma.restaurant.findMany({
-      where: status ? { status: status as any } : undefined,
-      include: {
-        owner: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
+    const where = status ? { status: status as any } : undefined;
+
+    const [restaurants, total] = await Promise.all([
+      prisma.restaurant.findMany({
+        where,
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          status: true,
+          priceRange: true,
+          createdAt: true,
+          owner: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          _count: {
+            select: {
+              reviews: true,
+              menus: true,
+            },
           },
         },
-        _count: {
-          select: {
-            reviews: true,
-            menus: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.restaurant.count({ where }),
+    ]);
+
+    const pages = Math.ceil(total / limit) || 1;
+
+    return NextResponse.json({
+      data: restaurants,
+      page,
+      limit,
+      total,
+      pages,
     });
-
-    return NextResponse.json(restaurants);
   } catch (error) {
     console.error("Error fetching restaurants:", error);
     return NextResponse.json(

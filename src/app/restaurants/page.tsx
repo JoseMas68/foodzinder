@@ -1,6 +1,8 @@
 import { getTaxonomies } from "@/server/queries/restaurants";
 import { getCities } from "@/server/queries/cities";
-import { FilterBar, RestaurantGrid, SortSelect } from "@/components/features";
+import { FilterBar } from "@/components/features/filter-bar";
+import { RestaurantGrid } from "@/components/features/restaurant-grid";
+import { SortSelect } from "@/components/features/sort-select";
 import { SearchAutocomplete } from "@/components/features/search-autocomplete";
 import { RestaurantMapWrapper } from "@/components/features/restaurant-map-wrapper";
 import { PublicHeader } from "@/components/layout/public-header";

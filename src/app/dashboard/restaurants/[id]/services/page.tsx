@@ -4,9 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Plus, Calendar, Utensils } from "lucide-react";
+import { ArrowLeft, Clock, Utensils } from "lucide-react";
 import { ServiceList } from "@/components/booking-services/service-list";
 import { CreateServiceDialog } from "@/components/booking-services/create-service-dialog";
+import { RestaurantManagementTabs } from "@/components/dashboard/restaurants/restaurant-management-tabs";
+import Link from "next/link";
 
 interface PageProps {
   params: Promise<{
@@ -60,14 +62,24 @@ export default async function BookingServicesPage({ params }: PageProps) {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-heading font-bold">Servicios de Reserva</h1>
-          <p className="text-gray-500 mt-1">
-            Configura los horarios y turnos para {restaurant.name}
-          </p>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" asChild>
+              <Link href={`/dashboard/restaurants/${restaurantId}`}>
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <div>
+              <h1 className="text-3xl font-heading font-bold">Servicios de Reserva</h1>
+              <p className="text-gray-500 mt-1">
+                Configura los horarios y turnos para {restaurant.name}
+              </p>
+            </div>
+          </div>
+          <CreateServiceDialog restaurantId={restaurantId} />
         </div>
-        <CreateServiceDialog restaurantId={restaurantId} />
+        <RestaurantManagementTabs restaurantId={restaurantId} activeTab="services" />
       </div>
 
       {/* Info Card */}

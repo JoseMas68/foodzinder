@@ -11,9 +11,8 @@ export async function getCities(): Promise<string[]> {
       where: {
         status: "APPROVED",
       },
-      select: {
-        address: true,
-      },
+      select: { address: true },
+      distinct: ["address"],
     });
 
     // Extract city from address (assuming format: "Street, City")

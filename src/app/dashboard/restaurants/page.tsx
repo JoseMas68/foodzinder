@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getCurrentUser } from '@/lib/auth/roles'
-import { getRestaurantsByOwnerId } from '@/server/queries/owner'
+import { prisma } from '@/lib/prisma'
 import { Button } from '@/components/ui/button'
 import { PlusCircle } from 'lucide-react'
 import { RestaurantList } from '@/components/dashboard/restaurants/restaurant-list'
@@ -17,7 +17,40 @@ export default async function RestaurantsPage() {
     redirect('/')
   }
 
-  const restaurants = await getRestaurantsByOwnerId(user.id)
+  const restaurantsData = await prisma.restaurant.findMany({
+    where: { ownerId: user.id },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      status: true,
+      priceRange: true,
+      createdAt: true,
+      _count: {
+        select: {
+          menus: true,
+          reviews: true,
+        },
+      },
+      taxonomies: {
+        select: {
+          taxonomy: {
+            select: {
+              name: true,
+              type: true,
+            },
+          },
+        },
+        take: 3,
+      },
+    },
+    orderBy: { createdAt: 'desc' },
+  })
+  const restaurants = restaurantsData.map((restaurant) => ({
+    ...restaurant,
+    createdAt: restaurant.createdAt.toISOString(),
+  }))
 
   return (
     <div className="space-y-6">

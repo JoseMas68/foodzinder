@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Users, Clock, Phone, Mail, User, MessageSquare, Store, ShieldCheck } from "lucide-react";
-import Image from "next/image";
 import { BookingStatusSelector } from "@/components/bookings/booking-status-selector";
 import { AssignTableSelector } from "@/components/bookings/assign-table-selector";
 import { BookingFilters } from "@/components/bookings/booking-filters";
@@ -29,18 +28,6 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
 
   const params = await searchParams;
 
-  // ADMIN ve TODOS los restaurantes de la plataforma
-  const restaurants = await prisma.restaurant.findMany({
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-    },
-    orderBy: {
-      name: "asc",
-    },
-  });
-
   // Filtros
   const selectedRestaurantId = params.restaurant;
   const selectedStatus = params.status;
@@ -56,55 +43,72 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
     whereClause.status = selectedStatus;
   }
 
-  // Limitar a las últimas 50 reservas para mejorar rendimiento
-  const bookings = await prisma.booking.findMany({
-    where: whereClause,
-    include: {
-      restaurant: {
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          address: true,
-          logoUrl: true,
-          owner: {
-            select: {
-              firstName: true,
-              lastName: true,
-              email: true,
+  const [restaurants, bookings] = await Promise.all([
+    prisma.restaurant.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
+    }),
+    prisma.booking.findMany({
+      where: whereClause,
+      include: {
+        restaurant: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            address: true,
+            owner: {
+              select: {
+                firstName: true,
+                lastName: true,
+                email: true,
+              },
             },
           },
         },
-      },
-      user: {
-        select: {
-          firstName: true,
-          lastName: true,
-          email: true,
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true,
+          },
+        },
+        table: {
+          select: {
+            id: true,
+            tableNumber: true,
+            capacity: true,
+            minCapacity: true,
+            area: true,
+            shape: true,
+          },
         },
       },
-      table: {
-        select: {
-          id: true,
-          tableNumber: true,
-          capacity: true,
-          minCapacity: true,
-          area: true,
-          shape: true,
-        },
+      orderBy: {
+        date: "desc",
       },
-    },
-    orderBy: {
-      date: "desc",
-    },
-    take: 50, // Limitar a 50 resultados
-  });
+      take: 40,
+    }),
+  ]);
 
-  // Separar reservas
-  const pendingBookings = bookings.filter((b) => b.status === "PENDING");
-  const confirmedBookings = bookings.filter((b) => b.status === "CONFIRMED");
-  const otherBookings = bookings.filter(
-    (b) => b.status !== "PENDING" && b.status !== "CONFIRMED"
+  const groupedBookings = bookings.reduce(
+    (acc, booking) => {
+      if (booking.status === "PENDING") {
+        acc.pending.push(booking);
+      } else if (booking.status === "CONFIRMED") {
+        acc.confirmed.push(booking);
+      } else {
+        acc.other.push(booking);
+      }
+      return acc;
+    },
+    { pending: [] as typeof bookings, confirmed: [] as typeof bookings, other: [] as typeof bookings }
   );
 
   const statusConfig = {
@@ -127,17 +131,6 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
             <div className="flex-1">
               {/* Restaurant info */}
               <div className="flex items-center gap-3 mb-3">
-                {booking.restaurant.logoUrl && (
-                  <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0">
-                    <Image
-                      src={booking.restaurant.logoUrl}
-                      alt={booking.restaurant.name}
-                      width={40}
-                      height={40}
-                      className="object-cover"
-                    />
-                  </div>
-                )}
                 <div className="flex-1">
                   <h3 className="font-bold text-lg">{booking.restaurant.name}</h3>
                   <p className="text-sm text-gray-600">{booking.restaurant.address}</p>
@@ -272,13 +265,13 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-gray-600">Pendientes</div>
-            <div className="text-2xl font-bold text-yellow-600">{pendingBookings.length}</div>
+            <div className="text-2xl font-bold text-yellow-600">{groupedBookings.pending.length}</div>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
             <div className="text-sm text-gray-600">Confirmadas</div>
-            <div className="text-2xl font-bold text-green-600">{confirmedBookings.length}</div>
+            <div className="text-2xl font-bold text-green-600">{groupedBookings.confirmed.length}</div>
           </CardContent>
         </Card>
         <Card>
@@ -293,12 +286,12 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
       <BookingFilters restaurants={restaurants} />
 
       {/* Pending bookings */}
-      {pendingBookings.length > 0 && (
+      {groupedBookings.pending.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-yellow-600" />
-              Reservas Pendientes ({pendingBookings.length})
+              Reservas Pendientes ({groupedBookings.pending.length})
             </CardTitle>
             <CardDescription>
               Requieren confirmación o acción
@@ -306,7 +299,7 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {pendingBookings.map((booking) => (
+              {groupedBookings.pending.map((booking) => (
                 <BookingCard key={booking.id} booking={booking} />
               ))}
             </div>
@@ -315,12 +308,12 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
       )}
 
       {/* Confirmed bookings */}
-      {confirmedBookings.length > 0 && (
+      {groupedBookings.confirmed.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Calendar className="h-5 w-5 text-green-600" />
-              Reservas Confirmadas ({confirmedBookings.length})
+              Reservas Confirmadas ({groupedBookings.confirmed.length})
             </CardTitle>
             <CardDescription>
               Próximas reservas confirmadas
@@ -328,7 +321,7 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {confirmedBookings.map((booking) => (
+              {groupedBookings.confirmed.map((booking) => (
                 <BookingCard key={booking.id} booking={booking} />
               ))}
             </div>
@@ -337,12 +330,12 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
       )}
 
       {/* Other bookings */}
-      {otherBookings.length > 0 && (
+      {groupedBookings.other.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-gray-500" />
-              Otras Reservas ({otherBookings.length})
+              Otras Reservas ({groupedBookings.other.length})
             </CardTitle>
             <CardDescription>
               Completadas, canceladas y no-show
@@ -350,7 +343,7 @@ export default async function AdminBookingsPage({ searchParams }: PageProps) {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {otherBookings.map((booking) => (
+              {groupedBookings.other.map((booking) => (
                 <BookingCard key={booking.id} booking={booking} />
               ))}
             </div>

@@ -1,5 +1,5 @@
 import { PublicHeader } from "@/components/layout/public-header";
-import { HomeFooter } from "@/components/home";
+import { HomeFooter } from "@/components/home/home-footer";
 import { DynamicPageSections } from "@/components/home/dynamic-page-sections";
 import { SearchAutocomplete } from "@/components/features/search-autocomplete";
 import { getCurrentUser } from "@/lib/auth/roles";

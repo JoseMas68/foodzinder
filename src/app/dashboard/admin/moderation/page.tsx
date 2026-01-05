@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Image from "next/image";
+// No Next/Image here to keep the view lightweight and avoid loading the full cover per card
 
 interface Restaurant {
   id: string;
@@ -101,14 +101,18 @@ export default function ModerationPage() {
         : `/api/admin/restaurants?status=${filterStatus}`;
 
       const response = await fetch(url);
-      const data = await response.json();
-      // Asegurar que data sea un array
-      if (Array.isArray(data)) {
-        setRestaurants(data);
-      } else {
-        console.error("API did not return an array:", data);
-        setRestaurants([]);
+      const payload = await response.json();
+      const list = Array.isArray(payload)
+        ? payload
+        : Array.isArray(payload?.data)
+        ? payload.data
+        : [];
+
+      if (!Array.isArray(payload) && !Array.isArray(payload?.data)) {
+        console.error("API did not return an array:", payload);
       }
+
+      setRestaurants(list);
     } catch (error) {
       console.error("Error fetching restaurants:", error);
       setRestaurants([]);
@@ -202,32 +206,13 @@ export default function ModerationPage() {
         ) : (
           <div className="grid gap-4">
             {restaurants.map((restaurant) => (
-              <Card key={restaurant.id} className="overflow-hidden">
-                <div className="flex">
-                  {/* Image */}
-                  <div className="relative w-48 h-48 flex-shrink-0 bg-gray-100">
-                    {restaurant.coverUrl ? (
-                      <Image
-                        src={restaurant.coverUrl}
-                        alt={restaurant.name}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-gray-400">
-                        Sin imagen
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div className="flex-1 p-6">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-xl font-semibold">
-                            {restaurant.name}
-                          </h3>
+              <Card key={restaurant.id} className="overflow-hidden border border-gray-100 shadow-sm">
+                <CardContent className="p-6">
+                  <div className="flex flex-col gap-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="text-xl font-semibold">{restaurant.name}</h3>
                           <Badge
                             variant="outline"
                             className={statusColors[restaurant.status]}
@@ -235,39 +220,31 @@ export default function ModerationPage() {
                             {statusLabels[restaurant.status]}
                           </Badge>
                         </div>
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-sm text-muted-foreground line-clamp-2 max-w-2xl">
                           {restaurant.description}
                         </p>
                       </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span className="truncate">{restaurant.address}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <DollarSign className="h-4 w-4" />
-                        <span>{priceRangeLabels[restaurant.priceRange]}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <User className="h-4 w-4" />
-                        <span>
+                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        <div className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1">
+                          <MapPin className="h-3 w-3" />
+                          <span className="max-w-[160px] truncate">{restaurant.address}</span>
+                        </div>
+                        <div className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1">
+                          <DollarSign className="h-3 w-3" />
+                          {priceRangeLabels[restaurant.priceRange]}
+                        </div>
+                        <div className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1">
+                          <User className="h-3 w-3" />
                           {restaurant.owner.firstName} {restaurant.owner.lastName}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Calendar className="h-4 w-4" />
-                        <span>
-                          {new Date(restaurant.createdAt).toLocaleDateString(
-                            "es-ES"
-                          )}
-                        </span>
+                        </div>
+                        <div className="inline-flex items-center gap-1 rounded-full bg-muted px-3 py-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(restaurant.createdAt).toLocaleDateString("es-ES")}
+                        </div>
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -311,7 +288,7 @@ export default function ModerationPage() {
                       )}
                     </div>
                   </div>
-                </div>
+                </CardContent>
               </Card>
             ))}
           </div>

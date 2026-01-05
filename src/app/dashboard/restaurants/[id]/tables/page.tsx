@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { TableList } from "@/components/tables/table-list";
+import { RestaurantManagementTabs } from "@/components/dashboard/restaurants/restaurant-management-tabs";
 
 interface PageProps {
   params: Promise<{
@@ -66,8 +67,8 @@ export default async function RestaurantTablesPage({ params }: PageProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Button variant="ghost" size="icon" asChild>
             <Link href={`/dashboard/restaurants/${id}`}>
               <ArrowLeft className="h-4 w-4" />
@@ -78,6 +79,7 @@ export default async function RestaurantTablesPage({ params }: PageProps) {
             <p className="text-gray-500 mt-1">{restaurant.name}</p>
           </div>
         </div>
+        <RestaurantManagementTabs restaurantId={id} activeTab="tables" />
       </div>
 
       {/* Stats */}

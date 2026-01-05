@@ -9,13 +9,20 @@ import { revalidatePath } from "next/cache";
  */
 export async function toggleFavorite(restaurantId: string) {
     try {
-        const { userId } = await auth();
-        if (!userId) throw new Error("No autorizado");
+        const { userId: clerkId } = await auth();
+        if (!clerkId) throw new Error("No autorizado");
+
+        const user = await prisma.user.findUnique({
+            where: { clerkId },
+            select: { id: true },
+        });
+
+        if (!user) throw new Error("Usuario no encontrado");
 
         const existing = await prisma.favorite.findUnique({
             where: {
                 userId_restaurantId: {
-                    userId,
+                    userId: user.id,
                     restaurantId,
                 },
             },
@@ -28,14 +35,13 @@ export async function toggleFavorite(restaurantId: string) {
         } else {
             await prisma.favorite.create({
                 data: {
-                    userId,
+                    userId: user.id,
                     restaurantId,
                 },
             });
         }
 
         revalidatePath(`/restaurants`);
-        // Revalidar el slug si lo tenemos... pero revalidamos la lista por ahora
 
         return { success: true, isFavorite: !existing };
     } catch (error: any) {
@@ -49,13 +55,20 @@ export async function toggleFavorite(restaurantId: string) {
  */
 export async function isFavorite(restaurantId: string) {
     try {
-        const { userId } = await auth();
-        if (!userId) return false;
+        const { userId: clerkId } = await auth();
+        if (!clerkId) return false;
+
+        const user = await prisma.user.findUnique({
+            where: { clerkId },
+            select: { id: true },
+        });
+
+        if (!user) return false;
 
         const favorite = await prisma.favorite.findUnique({
             where: {
                 userId_restaurantId: {
-                    userId,
+                    userId: user.id,
                     restaurantId,
                 },
             },
@@ -72,11 +85,18 @@ export async function isFavorite(restaurantId: string) {
  */
 export async function getMyFavorites() {
     try {
-        const { userId } = await auth();
-        if (!userId) return [];
+        const { userId: clerkId } = await auth();
+        if (!clerkId) return [];
+
+        const user = await prisma.user.findUnique({
+            where: { clerkId },
+            select: { id: true },
+        });
+
+        if (!user) return [];
 
         const favorites = await prisma.favorite.findMany({
-            where: { userId },
+            where: { userId: user.id },
         });
 
         return favorites;

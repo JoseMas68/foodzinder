@@ -20,7 +20,7 @@ export default async function DashboardLayout({
       <DashboardSidebar userRole={user.role} />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col lg:ml-64">
         <DashboardHeader />
         <main className="flex-1 p-6 lg:p-8 bg-muted/30">
           <div className="max-w-7xl mx-auto">

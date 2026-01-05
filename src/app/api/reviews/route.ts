@@ -102,6 +102,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const restaurantId = searchParams.get("restaurantId");
     const userId = searchParams.get("userId");
+    const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
+    const limitParam = Number(searchParams.get("limit") ?? "20");
+    const limit = Math.min(Math.max(limitParam, 1), 100);
+    const skip = (page - 1) * limit;
+
+    if (!restaurantId && !userId) {
+      return NextResponse.json(
+        { error: "Provide restaurantId or userId" },
+        { status: 400 }
+      );
+    }
 
     const where: any = {};
 
@@ -118,28 +129,45 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const reviews = await prisma.review.findMany({
-      where,
-      include: {
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
+    const [reviews, total] = await Promise.all([
+      prisma.review.findMany({
+        where,
+        select: {
+          id: true,
+          rating: true,
+          comment: true,
+          photos: true,
+          createdAt: true,
+          restaurantId: true,
+          restaurant: {
+            select: {
+              name: true,
+              slug: true,
+            },
+          },
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
           },
         },
-        restaurant: {
-          select: {
-            name: true,
-            slug: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: limit,
+      }),
+      prisma.review.count({ where }),
+    ]);
 
-    return NextResponse.json(reviews);
+    const pages = Math.ceil(total / limit) || 1;
+
+    return NextResponse.json({
+      data: reviews,
+      page,
+      limit,
+      total,
+      pages,
+    });
   } catch (error) {
     console.error("Error fetching reviews:", error);
     return NextResponse.json(

@@ -1,15 +1,11 @@
+"use client"
+
+import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Edit, Eye, MoreVertical } from 'lucide-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { LayoutGrid, List as ListIcon, PencilLine, ExternalLink } from 'lucide-react'
 
 interface Restaurant {
   id: string
@@ -17,9 +13,8 @@ interface Restaurant {
   slug: string
   description: string
   status: string
-  coverUrl: string | null
-  logoUrl: string | null
   priceRange: string
+  createdAt: string
   _count: {
     reviews: number
     menus: number
@@ -59,79 +54,110 @@ export function RestaurantList({ restaurants }: RestaurantListProps) {
     )
   }
 
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
+  const renderMetadata = (restaurant: Restaurant) => {
+    const cuisineTypes = restaurant.taxonomies
+      .filter((t) => t.taxonomy.type === 'CUISINE_TYPE')
+      .map((t) => t.taxonomy.name)
+
+    const status = statusConfig[restaurant.status as keyof typeof statusConfig]
+
+    return (
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <Badge variant={status.variant} className="text-[10px]">
+          {status.label}
+        </Badge>
+        {cuisineTypes[0] && <span>{cuisineTypes[0]}</span>}
+        <span>• {restaurant.priceRange}</span>
+        <span>
+          • {restaurant._count.menus} menús · {restaurant._count.reviews} reseñas
+        </span>
+      </div>
+    )
+  }
+
+  const ActionLinks = ({ restaurant }: { restaurant: Restaurant }) => (
+    <div className="flex items-center gap-2 text-xs font-medium">
+      <Link
+        href={`/restaurants/${restaurant.slug}`}
+        className="inline-flex items-center gap-1 text-primary hover:underline"
+      >
+        Público
+        <ExternalLink className="h-3 w-3" />
+      </Link>
+      <span className="text-muted-foreground">|</span>
+      <Link
+        href={`/dashboard/restaurants/${restaurant.id}`}
+        className="inline-flex items-center gap-1 text-primary hover:underline"
+      >
+        <PencilLine className="h-3 w-3" />
+        Editar
+      </Link>
+    </div>
+  )
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {restaurants.map((restaurant) => {
-        const status = statusConfig[restaurant.status as keyof typeof statusConfig]
-        const cuisineTypes = restaurant.taxonomies
-          .filter((t) => t.taxonomy.type === 'CUISINE_TYPE')
-          .map((t) => t.taxonomy.name)
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-muted-foreground">
+          {restaurants.length} {restaurants.length === 1 ? 'restaurante' : 'restaurantes'}
+        </p>
+        <div className="inline-flex rounded-full border bg-white p-1 shadow-sm">
+          <Button
+            variant={viewMode === 'grid' ? 'default' : 'ghost'}
+            size="sm"
+            className="gap-1 rounded-full"
+            onClick={() => setViewMode('grid')}
+          >
+            <LayoutGrid className="h-4 w-4" />
+            Cuadrícula
+          </Button>
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'ghost'}
+            size="sm"
+            className="gap-1 rounded-full"
+            onClick={() => setViewMode('list')}
+          >
+            <ListIcon className="h-4 w-4" />
+            Lista
+          </Button>
+        </div>
+      </div>
 
-        return (
-          <Card key={restaurant.id} className="overflow-hidden">
-            {/* Cover Image */}
-            <div className="relative h-32 bg-muted">
-              {restaurant.coverUrl && (
-                <Image
-                  src={restaurant.coverUrl}
-                  alt={restaurant.name}
-                  fill
-                  className="object-cover"
-                />
-              )}
-            </div>
-
-            <CardContent className="p-4">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <h3 className="font-semibold line-clamp-1">{restaurant.name}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={status.variant} className="text-xs">
-                      {status.label}
-                    </Badge>
-                    {cuisineTypes[0] && (
-                      <span className="text-xs text-muted-foreground">
-                        {cuisineTypes[0]}
-                      </span>
-                    )}
+      {viewMode === 'grid' ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {restaurants.map((restaurant) => (
+            <Card key={restaurant.id} className="h-full border border-gray-100 shadow-sm">
+              <CardContent className="p-4 space-y-3">
+                <h3 className="font-semibold text-lg line-clamp-1">
+                  {restaurant.name}
+                </h3>
+                {renderMetadata(restaurant)}
+                <ActionLinks restaurant={restaurant} />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {restaurants.map((restaurant) => (
+            <Card key={restaurant.id} className="border border-gray-100 shadow-sm">
+              <CardContent className="p-4">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h3 className="font-semibold text-lg">
+                      {restaurant.name}
+                    </h3>
+                    <ActionLinks restaurant={restaurant} />
                   </div>
+                  {renderMetadata(restaurant)}
                 </div>
-
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                      <Link href={`/restaurants/${restaurant.slug}`}>
-                        <Eye className="mr-2 h-4 w-4" />
-                        Ver público
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link href={`/dashboard/restaurants/${restaurant.id}`}>
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar
-                      </Link>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                {restaurant.description}
-              </p>
-
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <span>{restaurant._count.menus} menús</span>
-                <span>{restaurant._count.reviews} reseñas</span>
-              </div>
-            </CardContent>
-          </Card>
-        )
-      })}
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }

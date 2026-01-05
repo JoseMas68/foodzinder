@@ -69,7 +69,9 @@ export async function GET(request: NextRequest) {
     const restaurantsIndex = meilisearch.index(RESTAURANTS_INDEX);
 
     // If sorting by distance, we need more results to sort client-side
-    const searchLimit = sortParam === 'distance' && userLat && userLng ? 1000 : limit;
+    const distanceBatchSize = Math.min(500, Math.max(limit * 5, 100));
+    const searchLimit =
+      sortParam === 'distance' && userLat && userLng ? distanceBatchSize : limit;
 
     const results = await restaurantsIndex.search(query, {
       filter: filters.join(' AND '),
