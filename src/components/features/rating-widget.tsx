@@ -1,3 +1,5 @@
+"use client";
+
 import { Star } from "lucide-react";
 import { getRatingStars } from "@/lib/format";
 import { cn } from "@/lib/utils";

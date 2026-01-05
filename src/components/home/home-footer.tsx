@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { Facebook, Twitter, Instagram, Linkedin, Heart } from "lucide-react";
 import { Logo } from "@/components/ui/logo";

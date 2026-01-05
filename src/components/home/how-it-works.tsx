@@ -1,3 +1,5 @@
+"use client";
+
 import { Search, MapPin, Star } from "lucide-react";
 
 export function HowItWorks() {
