@@ -20,6 +20,8 @@ export default clerkMiddleware(async (auth, request) => {
         return redirectToSignIn()
       }
     }
+    // Continue to the next middleware or route handler
+    return NextResponse.next()
   } catch (error) {
     // Log error but don't crash the app
     console.error('Clerk middleware error:', error)
