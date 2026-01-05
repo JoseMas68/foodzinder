@@ -3,7 +3,7 @@ FROM node:18-alpine AS base
 
 # Instalar dependencias solo cuando sea necesario
 FROM base AS deps
-RUN apk add --no-cache libc6-compat
+RUN apk add --no-cache libc6-compat openssl1.1-compat
 WORKDIR /app
 
 # Copiar archivos de dependencias
@@ -16,6 +16,7 @@ RUN npm ci --legacy-peer-deps && \
 
 # Rebuild del código fuente solo cuando sea necesario
 FROM base AS builder
+RUN apk add --no-cache openssl1.1-compat
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
@@ -84,6 +85,7 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
+RUN apk add --no-cache openssl1.1-compat
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
