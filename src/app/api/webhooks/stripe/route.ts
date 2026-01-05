@@ -8,6 +8,10 @@ export async function POST(req: Request) {
     const body = await req.text();
     const signature = (await headers()).get("Stripe-Signature") as string;
 
+    if (!env.STRIPE_WEBHOOK_SECRET) {
+        return new Response('Stripe webhook not configured', { status: 503 });
+    }
+
     let event: Stripe.Event;
 
     try {

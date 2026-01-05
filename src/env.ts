@@ -5,35 +5,40 @@ const envSchema = z.object({
   DATABASE_URL: z.string().url(),
 
   // Clerk
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string(),
-  CLERK_SECRET_KEY: z.string(),
-  CLERK_WEBHOOK_SECRET: z.string(),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
+  CLERK_SECRET_KEY: z.string().min(1),
+  CLERK_WEBHOOK_SECRET: z.string().optional(),
 
   // Stripe
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string(),
-  STRIPE_SECRET_KEY: z.string(),
-  STRIPE_WEBHOOK_SECRET: z.string(),
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+
+  // Cloudinary
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME: z.string().optional(),
+  CLOUDINARY_API_KEY: z.string().optional(),
+  CLOUDINARY_API_SECRET: z.string().optional(),
 
   // Bunny.net
-  NEXT_PUBLIC_BUNNY_CDN_URL: z.string().url(),
-  BUNNY_API_KEY: z.string().optional(),
+  NEXT_PUBLIC_BUNNY_CDN_URL: z.string().url().optional().or(z.literal('')),
+  BUNNY_API_KEY: z.string().optional().or(z.literal('')),
 
   // Meilisearch
   NEXT_PUBLIC_MEILISEARCH_HOST: z.string().url().optional(),
   MEILISEARCH_MASTER_KEY: z.string().optional(),
 
   // Redis
-  REDIS_URL: z.string().optional(),
+  REDIS_URL: z.string().optional().or(z.literal('')),
 
   // Email
-  RESEND_API_KEY: z.string().optional(),
+  RESEND_API_KEY: z.string().optional().or(z.literal('')),
 
   // App Config
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
   // Analytics
-  NEXT_PUBLIC_GTM_ID: z.string().optional(),
+  NEXT_PUBLIC_GTM_ID: z.string().optional().or(z.literal('')),
 });
 
 type Env = z.infer<typeof envSchema>;
@@ -53,6 +58,10 @@ export function getEnv(): Env {
       process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME:
+      process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
     NEXT_PUBLIC_BUNNY_CDN_URL: process.env.NEXT_PUBLIC_BUNNY_CDN_URL,
     BUNNY_API_KEY: process.env.BUNNY_API_KEY,
     NEXT_PUBLIC_MEILISEARCH_HOST: process.env.NEXT_PUBLIC_MEILISEARCH_HOST,
