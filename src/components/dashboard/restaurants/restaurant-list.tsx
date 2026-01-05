@@ -39,6 +39,8 @@ const statusConfig = {
 }
 
 export function RestaurantList({ restaurants }: RestaurantListProps) {
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
   if (restaurants.length === 0) {
     return (
       <Card>
@@ -53,8 +55,6 @@ export function RestaurantList({ restaurants }: RestaurantListProps) {
       </Card>
     )
   }
-
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
   const renderMetadata = (restaurant: Restaurant) => {
     const cuisineTypes = restaurant.taxonomies
