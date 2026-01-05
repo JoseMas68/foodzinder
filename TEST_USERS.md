@@ -55,19 +55,19 @@ Esto creará 3 usuarios en tu base de datos local:
    - Email: `admin@foodzinder.com`
    - First name: `Admin`
    - Last name: `Foodzinder`
-   - Password: `TestAdmin123!` (o la que prefieras)
+   - Password: `Admin123!` (⚠️ Debe ser exactamente esta)
 
    **Usuario 2 - OWNER:**
    - Email: `owner@foodzinder.com`
    - First name: `Owner`
    - Last name: `Restaurant`
-   - Password: `TestOwner123!` (o la que prefieras)
+   - Password: `Owner123!` (⚠️ Debe ser exactamente esta)
 
    **Usuario 3 - USER:**
    - Email: `user@foodzinder.com`
    - First name: `Usuario`
    - Last name: `Prueba`
-   - Password: `TestUser123!` (o la que prefieras)
+   - Password: `User123!` (⚠️ Debe ser exactamente esta)
 
 5. **Copia el User ID** de cada usuario (empieza con `user_...`)
    - Click en cada usuario
