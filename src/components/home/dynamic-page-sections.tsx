@@ -12,7 +12,7 @@ interface DynamicPageSectionsProps {
     config: any;
   }>;
   isAuthenticated: boolean;
-  favoriteIds: Set<string>;
+  favoriteIds: string[];
 }
 
 export async function DynamicPageSections({

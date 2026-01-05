@@ -25,7 +25,7 @@ export default async function HomePage() {
       })
     : [];
 
-  const favoriteIds = new Set(userFavorites.map((f) => f.restaurantId));
+  const favoriteIds = userFavorites.map((f) => f.restaurantId);
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50/50">
