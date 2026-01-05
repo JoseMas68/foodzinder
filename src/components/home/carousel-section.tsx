@@ -9,7 +9,7 @@ interface CarouselSectionProps {
   filter: string;
   limit: number;
   isAuthenticated: boolean;
-  favoriteIds: Set<string>;
+  favoriteIds: string[];
 }
 
 export async function CarouselSection({
