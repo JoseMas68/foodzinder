@@ -1,21 +1,24 @@
 "use client";
 
-import { SignedIn, SignedOut } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 
-// Lazy load Clerk components to avoid SSR issues
-const SignInButton = dynamic(() => import("@/components/auth/clerk-buttons").then(mod => ({ default: mod.SignInButton })), { ssr: false });
-const SignUpButton = dynamic(() => import("@/components/auth/clerk-buttons").then(mod => ({ default: mod.SignUpButton })), { ssr: false });
-const UserButton = dynamic(() => import("@/components/auth/clerk-buttons").then(mod => ({ default: mod.UserButton })), { ssr: false });
+// Lazy load ALL Clerk components to avoid SSR issues
+const ClerkAuth = dynamic(() => import("./clerk-auth-buttons"), { ssr: false });
 
 export function PublicHeader() {
   const pathname = usePathname();
   const isOnHomePage = pathname === "/";
   const isOnRestaurantsPage = pathname === "/restaurants";
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header className="border-b bg-white/80 backdrop-blur-md sticky top-0 z-50">
@@ -53,41 +56,7 @@ export function PublicHeader() {
           </div>
 
           {/* Auth - Right */}
-          <div className="hidden md:flex items-center gap-3">
-            <SignedOut>
-              <SignInButton />
-              <SignUpButton />
-            </SignedOut>
-            <SignedIn>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="font-medium">
-                  Dashboard
-                </Button>
-              </Link>
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: "w-9 h-9",
-                  },
-                }}
-              />
-            </SignedIn>
-          </div>
-
-          {/* Mobile nav */}
-          <div className="flex md:hidden items-center gap-2">
-            <SignedOut>
-              <SignInButton className="text-xs" />
-            </SignedOut>
-            <SignedIn>
-              <Link href="/dashboard">
-                <Button variant="ghost" size="sm" className="text-xs">
-                  Panel
-                </Button>
-              </Link>
-              <UserButton />
-            </SignedIn>
-          </div>
+          {mounted && <ClerkAuth />}
         </nav>
       </div>
     </header>
