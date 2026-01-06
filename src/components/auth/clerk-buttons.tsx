@@ -27,6 +27,6 @@ export function SignUpButton({ children, className }: { children?: React.ReactNo
   );
 }
 
-export function UserButton({ appearance }: { appearance?: any }) {
-  return <ClerkUserButton appearance={appearance} />;
+export function UserButton({ appearance, afterSignOutUrl }: { appearance?: any; afterSignOutUrl?: string }) {
+  return <ClerkUserButton appearance={appearance} afterSignOutUrl={afterSignOutUrl} />;
 }
