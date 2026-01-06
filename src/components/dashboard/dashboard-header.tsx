@@ -1,6 +1,6 @@
 'use client'
 
-import { UserButton } from '@clerk/nextjs'
+import { UserButton } from '@/components/auth/clerk-buttons'
 import { Menu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 

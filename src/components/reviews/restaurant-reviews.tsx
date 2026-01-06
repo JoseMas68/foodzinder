@@ -6,7 +6,7 @@ import { ReviewList } from "./review-list";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Star, MessageSquare } from "lucide-react";
-import { SignInButton } from "@clerk/nextjs";
+import { SignInButton } from "@/components/auth/clerk-buttons";
 
 interface Review {
   id: string;
@@ -133,7 +133,7 @@ export function RestaurantReviews({
                   Inicia sesión para dejar una reseña
                 </p>
               </div>
-              <SignInButton mode="modal">
+              <SignInButton>
                 <Button>Iniciar Sesión</Button>
               </SignInButton>
             </div>

@@ -14,7 +14,7 @@ import {
     Settings
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton } from "@/components/auth/clerk-buttons";
 
 interface SidebarProps {
     role?: "ADMIN" | "OWNER" | "USER";

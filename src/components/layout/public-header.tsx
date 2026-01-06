@@ -1,6 +1,7 @@
 "use client";
 
-import { SignInButton, SignUpButton, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
+import { SignInButton, SignUpButton, UserButton } from "@/components/auth/clerk-buttons";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
@@ -49,16 +50,8 @@ export function PublicHeader() {
           {/* Auth - Right */}
           <div className="hidden md:flex items-center gap-3">
             <SignedOut>
-              <SignInButton mode="modal">
-                <Button variant="ghost" size="sm" className="font-medium">
-                  Iniciar Sesión
-                </Button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <Button size="sm" className="font-semibold">
-                  Registrarse
-                </Button>
-              </SignUpButton>
+              <SignInButton />
+              <SignUpButton />
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard">
@@ -79,11 +72,7 @@ export function PublicHeader() {
           {/* Mobile nav */}
           <div className="flex md:hidden items-center gap-2">
             <SignedOut>
-              <SignInButton mode="modal">
-                <Button variant="ghost" size="sm" className="text-xs">
-                  Entrar
-                </Button>
-              </SignInButton>
+              <SignInButton className="text-xs" />
             </SignedOut>
             <SignedIn>
               <Link href="/dashboard">
