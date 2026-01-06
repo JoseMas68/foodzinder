@@ -201,7 +201,7 @@ export async function CarouselSection({
     logoUrl: logoUrl ?? undefined,
     coverUrl: coverUrl ?? undefined,
     stats: statsMap[rest.id],
-    isFavorite: favoriteIds.has(rest.id),
+    isFavorite: favoriteIds.includes(rest.id),
   }));
 
   return (
