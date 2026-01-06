@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { SignInButton } from "@clerk/nextjs";
 
 interface FavoriteButtonProps {
   restaurantId: string;
@@ -79,20 +78,20 @@ export function FavoriteButton({
 
   if (!isAuthenticated) {
     return (
-      <SignInButton mode="modal">
-        <Button
-          variant={variant === "icon" ? "secondary" : "outline"}
-          size={size}
-          className={className}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
-          <Heart className="h-5 w-5 text-gray-700 stroke-2" />
-          {variant !== "icon" && <span className="ml-2">Guardar</span>}
-        </Button>
-      </SignInButton>
+      <Button
+        variant={variant === "icon" ? "secondary" : "outline"}
+        size={size}
+        className={className}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          // Redirect to sign in page
+          window.location.href = "/sign-in?redirect_url=" + encodeURIComponent(window.location.pathname);
+        }}
+      >
+        <Heart className="h-5 w-5 text-gray-700 stroke-2" />
+        {variant !== "icon" && <span className="ml-2">Guardar</span>}
+      </Button>
     );
   }
 

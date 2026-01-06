@@ -47,7 +47,7 @@ export function RestaurantCard({
   return (
     <Card className="border-gray-100 hover:shadow-2xl hover:shadow-primary/5 hover:-translate-y-1 transition-all duration-500 group rounded-3xl relative">
       {/* Favorite button - positioned absolutely so it's outside the Link */}
-      <div className="absolute top-3 left-3 z-20">
+      <div className="absolute top-3 left-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <FavoriteButton
           restaurantId={restaurant.id}
           initialIsFavorite={restaurant.isFavorite || false}

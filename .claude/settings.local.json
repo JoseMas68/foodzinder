@@ -38,7 +38,15 @@
       "Bash(grep:*)",
       "Bash(del scriptsfix-clerk-ids.ts)",
       "Bash(git checkout:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(node scripts/add-use-client.js:*)",
+      "Bash(npm run build:*)",
+      "Bash(git restore:*)",
+      "Bash(ssh root@207.180.203.22 \"find /root -name ''foodzinder*'' -type d 2>/dev/null | head -10\")",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(docker exec:*)",
+      "Bash(python process_export.py:*)"
     ]
   }
 }
