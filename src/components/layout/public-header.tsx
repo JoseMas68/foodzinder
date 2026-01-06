@@ -1,11 +1,16 @@
 "use client";
 
 import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { SignInButton, SignUpButton, UserButton } from "@/components/auth/clerk-buttons";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import dynamic from "next/dynamic";
+
+// Lazy load Clerk components to avoid SSR issues
+const SignInButton = dynamic(() => import("@/components/auth/clerk-buttons").then(mod => ({ default: mod.SignInButton })), { ssr: false });
+const SignUpButton = dynamic(() => import("@/components/auth/clerk-buttons").then(mod => ({ default: mod.SignUpButton })), { ssr: false });
+const UserButton = dynamic(() => import("@/components/auth/clerk-buttons").then(mod => ({ default: mod.UserButton })), { ssr: false });
 
 export function PublicHeader() {
   const pathname = usePathname();
