@@ -132,7 +132,7 @@ export async function DELETE(request: NextRequest) {
 }
 
 // GET /api/favorites - Get user's favorites
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const { userId } = await auth();
 

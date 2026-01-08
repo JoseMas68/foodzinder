@@ -196,7 +196,7 @@ export function AssignTableSelector({
                       <SelectValue placeholder="Selecciona una mesa disponible" />
                     </SelectTrigger>
                     <SelectContent>
-                      {Object.entries(tablesByArea).map(([area, areaTables]) => (
+                      {(Object.entries(tablesByArea) as [string, any[]][]).map(([area, areaTables]) => (
                         <div key={area}>
                           <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">
                             {area}

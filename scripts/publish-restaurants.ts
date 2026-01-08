@@ -10,14 +10,14 @@ async function main() {
       status: RestaurantStatus.PENDING,
     },
     data: {
-      status: RestaurantStatus.PUBLISHED,
+      status: RestaurantStatus.APPROVED,
     },
   });
 
-  console.log(`✅ ${result.count} restaurantes actualizados a PUBLISHED\n`);
+  console.log(`✅ ${result.count} restaurantes actualizados a APPROVED\n`);
 
   const total = await prisma.restaurant.count({
-    where: { status: RestaurantStatus.PUBLISHED },
+    where: { status: RestaurantStatus.APPROVED },
   });
 
   console.log(`📊 Total de restaurantes publicados: ${total}`);

@@ -14,13 +14,7 @@ const RestaurantMapComponent = dynamic(
   }
 );
 
-interface Restaurant {
-  id: string;
-  name: string;
-  slug: string;
-  latitude?: number;
-  longitude?: number;
-}
+import { Restaurant } from "@/types";
 
 interface RestaurantMapWrapperProps {
   restaurants: Restaurant[];

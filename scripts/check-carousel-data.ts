@@ -36,7 +36,8 @@ async function main() {
 
   console.log(`\nSecciones CAROUSEL activas: ${sections.length}`);
   sections.forEach((s, i) => {
-    console.log(`${i + 1}. "${s.title}" - Filter: ${s.config?.filter}, Limit: ${s.config?.limit}`);
+    const config = s.config as any;
+    console.log(`${i + 1}. "${s.title}" - Filter: ${config?.filter}, Limit: ${config?.limit}`);
   });
 }
 

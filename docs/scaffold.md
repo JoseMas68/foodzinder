@@ -6,7 +6,7 @@ Este documento describe la estructura del scaffold implementado y cómo está or
 
 ### Configuración de Proyecto
 
-```
+```text
 ├── package.json              # Dependencias y scripts
 ├── tsconfig.json             # Configuración TypeScript
 ├── next.config.ts            # Configuración Next.js
@@ -20,7 +20,7 @@ Este documento describe la estructura del scaffold implementado y cómo está or
 
 ### Estructura de Carpetas
 
-```
+```text
 src/
 ├── app/                       # Next.js App Router
 │   ├── (public)/             # Rutas públicas (Home, Search)

@@ -125,7 +125,7 @@ async function main() {
           website: restaurant.website,
           logoUrl: restaurant.logoUrl,
           coverUrl: restaurant.coverUrl,
-          status: RestaurantStatus.PUBLISHED,
+          status: RestaurantStatus.APPROVED,
           ownerId: owner.id,
           taxonomies: {
             create: {

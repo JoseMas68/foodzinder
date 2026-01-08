@@ -11,6 +11,11 @@ const isPublicRoute = createRouteMatcher([
 ])
 
 export default clerkMiddleware(async (auth, request) => {
+  // MODO BYPASS PARA DESARROLLO LOCAL
+  if (process.env.NEXT_PUBLIC_AUTH_BYPASS === 'true') {
+    return;
+  }
+
   // Si la ruta no es pública, requiere autenticación
   if (!isPublicRoute(request)) {
     const { userId, redirectToSignIn } = await auth()

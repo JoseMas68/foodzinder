@@ -1,0 +1,151 @@
+# =============================================================================
+# VARIABLES DE ENTORNO PARA EASYPANEL - FOODZINDER
+# =============================================================================
+# Copia y pega estas variables en Easypanel
+# IMPORTANTE: Reemplaza los valores que dicen "CAMBIAR_ESTO" con tus valores reales
+# =============================================================================
+
+# NODE ENVIRONMENT
+NODE_ENV=production
+
+# =============================================================================
+# APP CONFIGURATION
+# =============================================================================
+# Cambia esto por tu dominio real o la IP del VPS
+NEXT_PUBLIC_APP_URL=http://207.180.203.22
+
+# =============================================================================
+# BASE DE DATOS (PostgreSQL)
+# =============================================================================
+# IMPORTANTE: Easypanel creará automáticamente una base de datos PostgreSQL
+# La URL será algo como: postgresql://postgres:CONTRASEÑA@postgres:5432/foodzinder
+#
+# Opción 1: Usar base de datos de Easypanel (recomendado)
+# DATABASE_URL=postgresql://postgres:CONTRASEÑA_GENERADA_POR_EASYPANEL@postgres:5432/foodzinder
+#
+# Opción 2: Usar base de datos externa
+DATABASE_URL=postgresql://foodzinder:CAMBIAR_ESTA_CONTRASEÑA_SEGURA@postgres:5432/foodzinder_db
+
+# =============================================================================
+# CLERK AUTHENTICATION
+# =============================================================================
+# Obtén estas claves en: https://dashboard.clerk.com
+# 1. Crea una aplicación
+# 2. Ve a "API Keys"
+# 3. Copia las claves
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=CAMBIAR_ESTO
+CLERK_SECRET_KEY=CAMBIAR_ESTO
+CLERK_WEBHOOK_SECRET=CAMBIAR_ESTO
+
+# =============================================================================
+# STRIPE PAYMENTS
+# =============================================================================
+# Obtén estas claves en: https://dashboard.stripe.com/apikeys
+# IMPORTANTE: Usa claves de TEST primero, luego cambia a LIVE
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=CAMBIAR_ESTO
+STRIPE_SECRET_KEY=CAMBIAR_ESTO
+STRIPE_WEBHOOK_SECRET=CAMBIAR_ESTO
+
+# =============================================================================
+# CLOUDINARY (Upload de Imágenes)
+# =============================================================================
+# Obtén estas claves en: https://cloudinary.com/console
+# 1. Regístrate gratis
+# 2. Ve a Dashboard
+# 3. Copia Cloud Name, API Key, API Secret
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=CAMBIAR_ESTO
+CLOUDINARY_API_KEY=CAMBIAR_ESTO
+CLOUDINARY_API_SECRET=CAMBIAR_ESTO
+
+# =============================================================================
+# UPLOADTHING (Alternativa para imágenes - OPCIONAL)
+# =============================================================================
+# Solo si prefieres usar UploadThing en vez de Cloudinary
+# Obtén en: https://uploadthing.com
+UPLOADTHING_SECRET=
+UPLOADTHING_APP_ID=
+
+# =============================================================================
+# BUNNY.NET CDN (OPCIONAL)
+# =============================================================================
+# Solo si quieres usar Bunny.net para CDN
+NEXT_PUBLIC_BUNNY_CDN_URL=
+BUNNY_API_KEY=
+
+# =============================================================================
+# MEILISEARCH (Búsqueda Rápida)
+# =============================================================================
+# IMPORTANTE: Easypanel puede crear un servicio de Meilisearch
+# Si lo creas, la URL será: http://meilisearch:7700
+# Si no, puedes usar Meilisearch Cloud
+NEXT_PUBLIC_MEILISEARCH_HOST=http://meilisearch:7700
+MEILISEARCH_MASTER_KEY=CAMBIAR_ESTA_MASTER_KEY_MUY_SEGURA_Y_LARGA
+
+# =============================================================================
+# REDIS/UPSTASH (OPCIONAL - Para caché)
+# =============================================================================
+# Solo si quieres usar Redis para caché
+# Easypanel puede crear un servicio de Redis
+REDIS_URL=
+
+# =============================================================================
+# RESEND (Email Transaccional)
+# =============================================================================
+# Obtén tu API key en: https://resend.com/api-keys
+# 1. Regístrate gratis (100 emails/día gratis)
+# 2. Ve a "API Keys"
+# 3. Crea una nueva key
+RESEND_API_KEY=CAMBIAR_ESTO
+
+# =============================================================================
+# GOOGLE TAG MANAGER (OPCIONAL - Analytics)
+# =============================================================================
+# Solo si quieres usar Google Analytics
+NEXT_PUBLIC_GTM_ID=
+
+# =============================================================================
+# FEATURE FLAGS
+# =============================================================================
+# Habilita/deshabilita features
+NEXT_PUBLIC_FEATURE_FLAG_REVIEWS=true
+NEXT_PUBLIC_FEATURE_FLAG_SUBSCRIPTIONS=true
+NEXT_PUBLIC_FEATURE_FLAG_BOOKINGS=true
+
+# =============================================================================
+# NOTAS IMPORTANTES PARA EASYPANEL
+# =============================================================================
+#
+# 1. SERVICIOS QUE DEBES CREAR EN EASYPANEL:
+#    - App (Next.js) - Este es tu proyecto principal
+#    - PostgreSQL (Base de datos) - Easypanel lo crea automáticamente
+#    - Meilisearch (Opcional) - Para búsqueda rápida
+#    - Redis (Opcional) - Para caché
+#
+# 2. PUERTO DE LA APP:
+#    - Next.js corre en puerto 3000 (ya configurado)
+#
+# 3. BUILD COMMAND:
+#    - npm run build
+#
+# 4. START COMMAND:
+#    - npm start
+#
+# 5. DOMINIO:
+#    - Easypanel te dará un dominio automático: tu-app.easypanel.host
+#    - Puedes agregar tu dominio personalizado después
+#
+# 6. VOLÚMENES (para persistencia):
+#    - PostgreSQL: /var/lib/postgresql/data
+#    - Meilisearch: /meili_data
+#
+# 7. HEALTH CHECK:
+#    - Path: /
+#    - Puerto: 3000
+#    - Intervalo: 30s
+#
+# 8. MIGRACIONES:
+#    - Después del primer deploy, ejecuta en el terminal de Easypanel:
+#      npx prisma generate
+#      npx prisma db push
+#
+# =============================================================================

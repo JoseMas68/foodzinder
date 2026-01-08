@@ -63,7 +63,7 @@ async function main() {
     },
     orderBy: [
       { type: 'asc' },
-      { _count: { restaurants: 'desc' } }
+      { restaurants: { _count: 'desc' } }
     ]
   });
 

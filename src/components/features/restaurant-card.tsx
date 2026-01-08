@@ -15,8 +15,8 @@ interface RestaurantCardProps {
     name: string;
     slug: string;
     description: string;
-    logoUrl?: string;
-    coverUrl?: string;
+    logoUrl?: string | null;
+    coverUrl?: string | null;
     priceRange: PriceRange;
     isFavorite?: boolean;
     distance?: number;

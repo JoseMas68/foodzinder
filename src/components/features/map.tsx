@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MapPin, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Restaurant } from "@/types";
 
 // Fix para iconos de Leaflet en Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -17,25 +18,6 @@ L.Icon.Default.mergeOptions({
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
-
-interface Restaurant {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  address: string;
-  latitude?: number;
-  longitude?: number;
-  logoUrl?: string;
-  coverUrl?: string;
-  priceRange: string;
-  cuisineTypes: string[];
-  stats?: {
-    averageRating: number;
-    reviewCount: number;
-  };
-  distance?: number;
-}
 
 interface RestaurantMapProps {
   restaurants: Restaurant[];
@@ -91,9 +73,8 @@ export function RestaurantMap({
     <div className="relative w-full h-full flex">
       {/* Collapsible Restaurant List */}
       <div
-        className={`absolute left-0 top-0 bottom-0 bg-white shadow-xl transition-all duration-300 z-[1000] flex flex-col ${
-          isListOpen ? "w-96" : "w-0"
-        }`}
+        className={`absolute left-0 top-0 bottom-0 bg-white shadow-xl transition-all duration-300 z-[1000] flex flex-col ${isListOpen ? "w-96" : "w-0"
+          }`}
       >
         {isListOpen && (
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
@@ -105,11 +86,10 @@ export function RestaurantMap({
             {restaurantsWithLocation.map((restaurant) => (
               <div
                 key={restaurant.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                  selectedRestaurant?.id === restaurant.id
-                    ? "border-primary bg-primary/5"
-                    : "border-gray-200 hover:border-primary/50"
-                }`}
+                className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${selectedRestaurant?.id === restaurant.id
+                  ? "border-primary bg-primary/5"
+                  : "border-gray-200 hover:border-primary/50"
+                  }`}
                 onClick={() => handleRestaurantClick(restaurant)}
               >
                 <div className="flex gap-3">
@@ -132,7 +112,7 @@ export function RestaurantMap({
                         <div className="flex items-center gap-1 text-xs">
                           <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                           <span className="font-medium">
-                            {restaurant.stats.averageRating.toFixed(1)}
+                            {restaurant.stats.averageRating?.toFixed(1) || "0.0"}
                           </span>
                         </div>
                       )}
@@ -165,9 +145,8 @@ export function RestaurantMap({
       <Button
         size="icon"
         variant="secondary"
-        className={`absolute top-4 z-[1001] shadow-lg transition-all duration-300 ${
-          isListOpen ? "left-[23.5rem]" : "left-4"
-        }`}
+        className={`absolute top-4 z-[1001] shadow-lg transition-all duration-300 ${isListOpen ? "left-[23.5rem]" : "left-4"
+          }`}
         onClick={() => setIsListOpen(!isListOpen)}
       >
         {isListOpen ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
@@ -201,7 +180,7 @@ export function RestaurantMap({
                   {restaurant.stats && (
                     <div className="flex items-center justify-center gap-1 text-xs mt-0.5">
                       <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                      <span>{restaurant.stats.averageRating.toFixed(1)}</span>
+                      <span>{restaurant.stats.averageRating?.toFixed(1) || "0.0"}</span>
                     </div>
                   )}
                 </div>

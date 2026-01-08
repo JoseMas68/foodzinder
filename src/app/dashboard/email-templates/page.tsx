@@ -74,7 +74,7 @@ export default function EmailTemplatesPage() {
     }
   };
 
-  const getTemplateIcon = (type: string) => {
+  const getTemplateIcon = (_type: string) => {
     return "📧";
   };
 

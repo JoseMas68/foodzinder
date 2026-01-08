@@ -5,7 +5,7 @@ import { menuSchema } from "@/lib/validations/menu";
 
 // GET /api/menus/[id] - Get a specific menu
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -155,7 +155,7 @@ export async function PATCH(
 
 // DELETE /api/menus/[id] - Delete a menu
 export async function DELETE(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {

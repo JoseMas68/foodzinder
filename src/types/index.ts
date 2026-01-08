@@ -39,22 +39,31 @@ export type RestaurantStatus = "PENDING" | "APPROVED" | "REJECTED" | "ARCHIVED";
 
 export type Restaurant = {
   id: string;
-  ownerId: string;
+  ownerId?: string;
   name: string;
   slug: string;
   description: string;
   address: string;
   latitude?: number;
   longitude?: number;
-  status: RestaurantStatus;
+  status?: RestaurantStatus;
   logoUrl?: string;
   coverUrl?: string;
   priceRange: PriceRange;
   phone?: string;
   website?: string;
   isFavorite?: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  cuisineTypes?: string[];
+  features?: string[];
+  averageRating?: number;
+  reviewCount?: number;
+  stats?: {
+    averageRating?: number;
+    reviewCount?: number;
+  };
+  distance?: number;
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 };
 
 /**

@@ -102,12 +102,10 @@ export async function getEmailTemplateByType(
   restaurantId?: string | null
 ) {
   try {
-    const template = await prisma.emailTemplate.findUnique({
+    const template = await prisma.emailTemplate.findFirst({
       where: {
-        type_restaurantId: {
-          type,
-          restaurantId: restaurantId || null,
-        },
+        type,
+        restaurantId: restaurantId || null,
       },
     });
 

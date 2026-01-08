@@ -30,7 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { createTable, updateTable } from "@/server/actions/tables";
 import { toast } from "sonner";
 
@@ -103,9 +103,9 @@ export function TableFormDialog({
       const result = isEditing
         ? await updateTable(table.id, data)
         : await createTable({
-            ...data,
-            restaurantId,
-          });
+          ...data,
+          restaurantId,
+        });
 
       if (result.success) {
         toast.success(
@@ -257,7 +257,7 @@ export function TableFormDialog({
                 Cancelar
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
                 {isEditing ? "Guardar Cambios" : "Crear Mesa"}
               </Button>
             </DialogFooter>

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
-import { Building2, Home, PlusCircle, Settings, UtensilsCrossed, Star, Heart, Layout, ShieldCheck, Calendar, ClipboardList, Mail } from 'lucide-react'
+import { Building2, Home, CirclePlus, Settings, UtensilsCrossed, Star, Heart, Layout, ShieldCheck, Calendar, ClipboardList, Mail } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 
 // Navegación común para todos los usuarios
@@ -49,7 +49,7 @@ const ownerNavigation = [
   {
     name: 'Nuevo Restaurante',
     href: '/dashboard/restaurants/new',
-    icon: PlusCircle,
+    icon: CirclePlus,
   },
   {
     name: 'Menús',
