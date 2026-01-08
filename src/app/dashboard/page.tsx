@@ -85,32 +85,33 @@ export default async function DashboardPage() {
                   <div className="flex-1 space-y-1">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium">
-                        {review.user.firstName} {review.user.lastName}
+                        {review.user?.firstName || 'Usuario'} {review.user?.lastName || 'Desconocido'}
                       </p>
-                      <span className="text-xs text-muted-foreground">
-                        en {review.restaurant.name}
-                      </span>
+                      {review.restaurant && (
+                        <span className="text-xs text-muted-foreground">
+                          en {review.restaurant.name}
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-1">
                       {[...Array(5)].map((_, i) => (
                         <Star
                           key={i}
-                          className={`w-3 h-3 ${
-                            i < review.rating
+                          className={`w-3 h-3 ${i < (review.rating || 0)
                               ? 'fill-yellow-400 text-yellow-400'
                               : 'text-gray-300'
-                          }`}
+                            }`}
                         />
                       ))}
                     </div>
                     <p className="text-sm text-muted-foreground line-clamp-2">
-                      {review.comment}
+                      {review.comment || 'Sin comentario'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(review.createdAt), {
+                      {review.createdAt ? formatDistanceToNow(new Date(review.createdAt), {
                         addSuffix: true,
                         locale: es,
-                      })}
+                      }) : 'Recientemente'}
                     </p>
                   </div>
                 </div>

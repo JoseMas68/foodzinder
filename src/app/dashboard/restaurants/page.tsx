@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { getCurrentUser } from '@/lib/auth/roles'
 import { getRestaurantsByOwnerId } from '@/server/queries/owner'
 import { Button } from '@/components/ui/button'
-import { PlusCircle } from 'lucide-react'
+import { CirclePlus } from 'lucide-react'
 import { RestaurantList } from '@/components/dashboard/restaurants/restaurant-list'
 
 export default async function RestaurantsPage() {
@@ -17,7 +17,17 @@ export default async function RestaurantsPage() {
     redirect('/')
   }
 
-  const restaurants = await getRestaurantsByOwnerId(user.id)
+  const restaurantsRaw = await getRestaurantsByOwnerId(user.id)
+
+  const restaurants = restaurantsRaw.map((r: any) => ({
+    ...r,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+    taxonomies: r.taxonomies.map((t: any) => ({
+      ...t,
+      assignedAt: t.assignedAt?.toISOString() || new Date().toISOString(),
+    }))
+  })) as any
 
   return (
     <div className="space-y-6">
@@ -30,7 +40,7 @@ export default async function RestaurantsPage() {
         </div>
         <Button asChild>
           <Link href="/dashboard/restaurants/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
+            <CirclePlus className="mr-2 h-4 w-4" />
             Nuevo Restaurante
           </Link>
         </Button>
