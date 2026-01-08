@@ -17,6 +17,13 @@ import { cache } from 'react'
  * to avoid multiple database queries in a single render
  */
 export const getCurrentUser = cache(async () => {
+  // MODO BYPASS PARA DESARROLLO LOCAL
+  if (process.env.NEXT_PUBLIC_AUTH_BYPASS === 'true') {
+    return await prisma.user.findFirst({
+      where: { role: UserRole.ADMIN },
+    })
+  }
+
   const { userId } = await auth()
 
   if (!userId) {

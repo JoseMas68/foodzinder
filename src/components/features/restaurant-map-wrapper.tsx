@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import type { MapRestaurant } from "@/components/features/map";
 
 const RestaurantMapComponent = dynamic(
   () => import("@/components/features/map").then((mod) => ({ default: mod.RestaurantMap })),
@@ -15,8 +14,10 @@ const RestaurantMapComponent = dynamic(
   }
 );
 
+import { Restaurant } from "@/types";
+
 interface RestaurantMapWrapperProps {
-  restaurants: MapRestaurant[];
+  restaurants: Restaurant[];
 }
 
 export function RestaurantMapWrapper({ restaurants }: RestaurantMapWrapperProps) {

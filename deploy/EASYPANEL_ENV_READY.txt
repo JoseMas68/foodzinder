@@ -1,0 +1,68 @@
+# ============================================
+# VARIABLES DE ENTORNO PARA EASYPANEL
+# Copia y pega TODO este contenido en Easypanel
+# ============================================
+
+NODE_ENV=production
+
+# ============================================
+# APP URL (Cambiar cuando tengas el dominio de Easypanel)
+# ============================================
+NEXT_PUBLIC_APP_URL=http://207.180.203.22
+
+# ============================================
+# BASE DE DATOS
+# IMPORTANTE: Easypanel creará PostgreSQL automáticamente
+# Cuando crees el servicio PostgreSQL, reemplaza PASSWORD_AQUI
+# con la contraseña que Easypanel te genere
+# ============================================
+DATABASE_URL=postgresql://foodzinder:PASSWORD_AQUI@postgres:5432/foodzinder_db
+
+# ============================================
+# CLERK (Autenticación) - ✅ LISTO
+# ============================================
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_aGVscGVkLXNjdWxwaW4tODAuY2xlcmsuYWNjb3VudHMuZGV2JA
+CLERK_SECRET_KEY=sk_test_v87cNbXmPYMD6jtLfkTg10ddK5LyXy2VoACOrNyb85
+CLERK_WEBHOOK_SECRET=whsec_placeholder
+
+# ============================================
+# CLOUDINARY (Imágenes) - ✅ LISTO
+# ============================================
+NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=dtrrkfgy2
+CLOUDINARY_API_KEY=978417842699787
+CLOUDINARY_API_SECRET=FzlQSpSmzvcFhuwkMsx-NxjsQNk
+
+# ============================================
+# MEILISEARCH (Búsqueda) - ✅ LISTO
+# ============================================
+NEXT_PUBLIC_MEILISEARCH_HOST=http://meilisearch:7700
+MEILISEARCH_MASTER_KEY=foodzinder_meili_master_key_2025
+
+# ============================================
+# RESEND (Email) - ⚠️ CAMBIAR DESPUÉS
+# Cuando tengas la API key real de Resend, cámbiala aquí
+# ============================================
+RESEND_API_KEY=re_placeholder
+
+# ============================================
+# STRIPE (Pagos) - ⚠️ CAMBIAR DESPUÉS
+# Cuando tengas las keys reales de Stripe (modo TEST), cámbialas aquí
+# ============================================
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_placeholder
+STRIPE_SECRET_KEY=sk_test_placeholder
+STRIPE_WEBHOOK_SECRET=whsec_placeholder
+
+# ============================================
+# FEATURE FLAGS
+# ============================================
+NEXT_PUBLIC_FEATURE_FLAG_REVIEWS=true
+NEXT_PUBLIC_FEATURE_FLAG_SUBSCRIPTIONS=true
+NEXT_PUBLIC_FEATURE_FLAG_BOOKINGS=true
+
+# ============================================
+# OPCIONAL (no necesarios por ahora)
+# ============================================
+NEXT_PUBLIC_GTM_ID=
+REDIS_URL=
+NEXT_PUBLIC_BUNNY_CDN_URL=
+BUNNY_API_KEY=

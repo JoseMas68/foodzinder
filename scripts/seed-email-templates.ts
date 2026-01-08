@@ -7,7 +7,12 @@ async function main() {
 
   // Template de confirmación de reserva
   await prisma.emailTemplate.upsert({
-    where: { type: "BOOKING_CONFIRMATION" },
+    where: {
+      type_restaurantId: {
+        type: "BOOKING_CONFIRMATION",
+        restaurantId: null as any
+      }
+    },
     update: {},
     create: {
       type: "BOOKING_CONFIRMATION",
@@ -122,7 +127,12 @@ async function main() {
 
   // Template de cancelación de reserva
   await prisma.emailTemplate.upsert({
-    where: { type: "BOOKING_CANCELLED" },
+    where: {
+      type_restaurantId: {
+        type: "BOOKING_CANCELLED",
+        restaurantId: null as any
+      }
+    },
     update: {},
     create: {
       type: "BOOKING_CANCELLED",

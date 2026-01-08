@@ -17,7 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -171,7 +171,7 @@ export function MenuForm({ initialData, isEditing = false }: MenuFormProps) {
             Cancelar
           </Button>
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting && <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />}
             {isEditing ? "Guardar Cambios" : "Crear Menú"}
           </Button>
         </div>

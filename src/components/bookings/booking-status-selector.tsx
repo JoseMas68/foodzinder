@@ -11,7 +11,7 @@ import {
 import { updateBooking } from "@/server/actions/bookings";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { LoaderCircle } from "lucide-react";
 
 interface BookingStatusSelectorProps {
   bookingId: string;
@@ -60,7 +60,7 @@ export function BookingStatusSelector({
     <div className="relative">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md z-10">
-          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          <LoaderCircle className="h-4 w-4 animate-spin text-primary" />
         </div>
       )}
       <Select value={status} onValueChange={handleStatusChange} disabled={isLoading}>

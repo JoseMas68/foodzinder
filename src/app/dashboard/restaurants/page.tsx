@@ -1,9 +1,9 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getCurrentUser } from '@/lib/auth/roles'
-import { prisma } from '@/lib/prisma'
+import { getRestaurantsByOwnerId } from '@/server/queries/owner'
 import { Button } from '@/components/ui/button'
-import { PlusCircle } from 'lucide-react'
+import { CirclePlus } from 'lucide-react'
 import { RestaurantList } from '@/components/dashboard/restaurants/restaurant-list'
 
 export default async function RestaurantsPage() {
@@ -17,40 +17,17 @@ export default async function RestaurantsPage() {
     redirect('/')
   }
 
-  const restaurantsData = await prisma.restaurant.findMany({
-    where: { ownerId: user.id },
-    select: {
-      id: true,
-      name: true,
-      slug: true,
-      description: true,
-      status: true,
-      priceRange: true,
-      createdAt: true,
-      _count: {
-        select: {
-          menus: true,
-          reviews: true,
-        },
-      },
-      taxonomies: {
-        select: {
-          taxonomy: {
-            select: {
-              name: true,
-              type: true,
-            },
-          },
-        },
-        take: 3,
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
-  const restaurants = restaurantsData.map((restaurant) => ({
-    ...restaurant,
-    createdAt: restaurant.createdAt.toISOString(),
-  }))
+  const restaurantsRaw = await getRestaurantsByOwnerId(user.id)
+
+  const restaurants = restaurantsRaw.map((r: any) => ({
+    ...r,
+    createdAt: r.createdAt.toISOString(),
+    updatedAt: r.updatedAt.toISOString(),
+    taxonomies: r.taxonomies.map((t: any) => ({
+      ...t,
+      assignedAt: t.assignedAt?.toISOString() || new Date().toISOString(),
+    }))
+  })) as any
 
   return (
     <div className="space-y-6">
@@ -63,7 +40,7 @@ export default async function RestaurantsPage() {
         </div>
         <Button asChild>
           <Link href="/dashboard/restaurants/new">
-            <PlusCircle className="mr-2 h-4 w-4" />
+            <CirclePlus className="mr-2 h-4 w-4" />
             Nuevo Restaurante
           </Link>
         </Button>

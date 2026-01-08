@@ -4,7 +4,7 @@ import { RestaurantCard } from "@/components/features/restaurant-card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRef } from "react";
-import { PriceRange } from "@/types";
+import { PriceRange } from "@prisma/client";
 
 interface Restaurant {
   id: string;
@@ -12,8 +12,8 @@ interface Restaurant {
   slug: string;
   description: string;
   address: string;
-  logoUrl?: string;
-  coverUrl?: string;
+  logoUrl?: string | null;
+  coverUrl?: string | null;
   priceRange: PriceRange;
   stats?: {
     averageRating: number;

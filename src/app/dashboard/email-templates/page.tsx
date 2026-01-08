@@ -74,17 +74,8 @@ export default function EmailTemplatesPage() {
     }
   };
 
-  const getTemplateIcon = (type: string) => {
-    const icons: Record<string, string> = {
-      BOOKING_CONFIRMATION: "✅",
-      BOOKING_CANCELLED: "❌",
-      OWNER_NEW_BOOKING: "👤",
-      BOOKING_REMINDER: "⏰",
-      PASSWORD_RESET: "🔑",
-      WELCOME_EMAIL: "✨",
-    };
-
-    return icons[type] || "📧";
+  const getTemplateIcon = (_type: string) => {
+    return "📧";
   };
 
   const getTemplateTypeLabel = (type: string) => {

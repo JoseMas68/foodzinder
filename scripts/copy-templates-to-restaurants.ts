@@ -62,7 +62,7 @@ async function copyTemplatesToRestaurants() {
             description: template.description,
             subject: template.subject,
             htmlContent: template.htmlContent,
-            variables: template.variables,
+            variables: template.variables as any,
             isActive: template.isActive,
             restaurantId: restaurant.id,
           },

@@ -5,6 +5,8 @@ const prisma = new PrismaClient()
 async function main() {
   const users = await prisma.user.findMany({
     select: {
+      id: true,
+      clerkId: true,
       email: true,
       role: true,
       firstName: true,

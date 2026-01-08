@@ -4,6 +4,7 @@ import { BookingCancelledEmail } from "./templates/booking-cancelled";
 import { OwnerNewBookingEmail } from "./templates/owner-new-booking";
 import { render } from "@react-email/render";
 
+
 interface SendBookingConfirmationParams {
   to: string;
   customerName: string;

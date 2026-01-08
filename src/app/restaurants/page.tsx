@@ -8,7 +8,7 @@ import { RestaurantMapWrapper } from "@/components/features/restaurant-map-wrapp
 import { PublicHeader } from "@/components/layout/public-header";
 import { HomeFooter } from "@/components/home";
 import { ViewToggle } from "@/components/features/view-toggle";
-import type { PriceRange } from "@/types";
+import type { PriceRange, Restaurant } from "@/types";
 import { getCurrentUser } from "@/lib/auth/roles";
 import { prisma } from "@/lib/prisma";
 
@@ -26,26 +26,6 @@ interface PageProps {
     view?: string;
     sort?: string;
   }>;
-}
-
-interface Restaurant {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  address: string;
-  latitude?: number;
-  longitude?: number;
-  logoUrl?: string;
-  coverUrl?: string;
-  priceRange: string;
-  phone?: string;
-  website?: string;
-  cuisineTypes: string[];
-  features: string[];
-  averageRating: number;
-  reviewCount: number;
-  distance?: number;
 }
 
 async function searchRestaurants(params: {
@@ -129,12 +109,12 @@ export default async function RestaurantsPage({ searchParams }: PageProps) {
   const restaurantIds = searchResults.hits.map((r) => r.id);
   const userFavorites = currentUser && restaurantIds.length > 0
     ? await prisma.favorite.findMany({
-        where: {
-          userId: currentUser.id,
-          restaurantId: { in: restaurantIds }
-        },
-        select: { restaurantId: true },
-      })
+      where: {
+        userId: currentUser.id,
+        restaurantId: { in: restaurantIds }
+      },
+      select: { restaurantId: true },
+    })
     : [];
 
   const favoriteRestaurantIds = new Set(userFavorites.map((f) => f.restaurantId));
